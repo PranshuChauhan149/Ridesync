@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚗 RideSync
 
-## Getting Started
+A full-stack **Vehicle Booking Platform** with real-time live tracking, secure Video KYC, and seamless partner onboarding built using Next.js and MongoDB.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## ✨ Features
+
+### 👤 User Side
+
+* User authentication (Login / Signup)
+* Book rides easily
+* Real-time vehicle tracking
+* Ride history
+
+### 🚕 Partner (Driver) Side
+
+* Multi-step onboarding system:
+
+  * Vehicle details
+  * Document upload (Aadhar, RC, License)
+  * Bank & payout setup
+* Go online/offline
+* Accept ride requests
+* Earnings tracking
+
+### 🧑‍💼 Admin Panel
+
+* Verify driver documents
+* Approve / reject onboarding
+* Monitor rides and users
+
+---
+
+## ⚡ Tech Stack
+
+### Frontend
+
+* Next.js (App Router)
+* React.js
+* Tailwind CSS
+* Framer Motion
+
+### Backend
+
+* Node.js (via Next.js API routes)
+* MongoDB + Mongoose
+
+### Realtime
+
+* Socket.IO (for live tracking)
+
+### Cloud & Integrations
+
+* Cloudinary (image uploads)
+* ZEGOCLOUD (Video KYC)
+
+---
+
+## 🏗️ Project Structure
+
+```
+ridesync/
+│
+├── app/                 # Next.js App Router pages
+├── components/          # Reusable UI components
+├── models/              # Mongoose models
+├── lib/                 # DB & utility functions
+├── api/                 # API routes
+├── public/              # Static assets
+└── styles/              # Global styles
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+## 🔄 Core Flow
 
-To learn more about Next.js, take a look at the following resources:
+```
+User → Book Ride → Find Driver → Ride Start → Live Tracking → Ride Complete
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+Driver → Onboarding → Document Upload → Admin Approval → Go Online → Accept Ride
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📸 Screenshots (Add Later)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+* Onboarding UI
+* Live tracking map
+* Booking screen
+* Admin dashboard
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🧠 Future Enhancements
+
+* 💳 Payment integration (Stripe / Razorpay)
+* 📍 Advanced map routing
+* ⭐ Rating & review system
+* 📊 Analytics dashboard
+* 🔔 Push notifications
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the repo
+2. Create a new branch
+3. Make your changes
+4. Submit a PR
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 👨‍💻 Author
+
+**Pranshu Chauhan**
+
+---
+
+## 🌟 Show Your Support
+
+If you like this project, give it a ⭐ on GitHub!
