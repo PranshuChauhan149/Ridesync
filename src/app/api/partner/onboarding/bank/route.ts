@@ -90,7 +90,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    return Response.json(partnerBank, { status: 200 });
+    return Response.json(
+      {
+        ...partnerBank.toObject(),
+        mobileNumber: user.mobileNumber || "",
+      },
+      { status: 200 }
+    );
 
   } catch (error) {
     console.log(error);

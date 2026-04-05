@@ -1,6 +1,6 @@
 'use client'
 
-import React, { InputHTMLAttributes, useState } from 'react'
+import React, { InputHTMLAttributes, useEffect, useState } from 'react'
 import { motion } from "framer-motion"
 import { ArrowLeft, BadgeCheck, Hash, Landmark, LucideIcon, Phone, User, Wallet } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -38,10 +38,65 @@ const Page = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const validateForm = (): boolean => {
+    // Account Holder validation
+    if (!form.accountHolder.trim()) {
+      toast.error("Account holder name is required");
+      return false;
+    }
+    if (form.accountHolder.trim().length < 3) {
+      toast.error("Name must be at least 3 characters");
+      return false;
+    }
+    if (!/^[a-zA-Z\s]+$/.test(form.accountHolder)) {
+      toast.error("Name should contain only letters and spaces");
+      return false;
+    }
+
+    // Account Number validation
+    if (!form.accountNumber.trim()) {
+      toast.error("Account number is required");
+      return false;
+    }
+    if (!/^\d{9,18}$/.test(form.accountNumber.trim())) {
+      toast.error("Account number should be 9-18 digits");
+      return false;
+    }
+
+    // IFSC validation
+    if (!form.ifsc.trim()) {
+      toast.error("IFSC code is required");
+      return false;
+    }
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(form.ifsc.trim())) {
+      toast.error("Invalid IFSC format (e.g. HDFC0001234)");
+      return false;
+    }
+
+    // Mobile Number validation
+    if (!form.mobileNumber.trim()) {
+      toast.error("Mobile number is required");
+      return false;
+    }
+    if (!/^\d{10}$/.test(form.mobileNumber.trim())) {
+      toast.error("Mobile number should be 10 digits");
+      return false;
+    }
+
+    // UPI validation (optional but if provided, validate)
+    if (form.upi.trim() && !/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(form.upi.trim())) {
+      toast.error("Invalid UPI format (e.g. name@upi)");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [name]: value
     });
   };
 
@@ -52,8 +107,11 @@ const Page = () => {
     form.mobileNumber;
 
   const handleSubmit = async () => {
-    if (!isValid || isSubmitting) {
-      toast.error("Please fill all required bank details");
+    if (!validateForm()) {
+      return;
+    }
+
+    if (isSubmitting) {
       return;
     }
 
@@ -82,6 +140,37 @@ const Page = () => {
     }
   };
 
+
+  useEffect(() => {
+    const handleGETData = async () => {
+      try {
+        const { data } = await axios.get("/api/partner/onboarding/bank");
+
+        setForm((prev) => ({
+          ...prev,
+          accountHolder: data?.accountHolder || "",
+          accountNumber: data?.accountNumber || "",
+          ifsc: data?.ifsc || "",
+          upi: data?.upi || "",
+          mobileNumber: data?.mobileNumber || data?.owner?.mobileNumber || "",
+        }));
+       
+        
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          return;
+        }
+        if (axios.isAxiosError(error)) {
+          toast.error(error.response?.data?.message || "Unable to fetch bank details");
+        } else {
+          toast.error("Unable to fetch bank details");
+        }
+      }
+    };
+
+    handleGETData();
+  }, []);
+
   return (
     <div className='min-h-screen bg-white flex items-center justify-center px-4'>
       
@@ -100,7 +189,7 @@ const Page = () => {
 
           <button
             onClick={() => router.back()}
-            className='absolute left-0 top-0 w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition'
+            className='bg-black absolute left-0 top-0 w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition'
           >
             <ArrowLeft size={18} />
           </button>
@@ -109,7 +198,7 @@ const Page = () => {
             Step 3 of 3
           </p>
 
-          <h1 className='text-xl font-bold mt-1'>
+          <h1 className= 'text-black text-xl font-bold mt-1'>
             Bank & Payout Setup
           </h1>
 

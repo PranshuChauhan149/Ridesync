@@ -4,6 +4,7 @@ import {motion} from "motion/react"
 import { Bike, Bus, Car, Truck } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
+import { RootState } from '@/redux/store'
 const HeroSection = ({onAuthRequired} : {onAuthRequired:()=>void}) => {
  const { userData } = useSelector((state: RootState) => state.user);
   const route = useRouter();

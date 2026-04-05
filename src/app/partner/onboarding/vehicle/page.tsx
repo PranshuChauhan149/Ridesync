@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Bike, Car, Package, Truck } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -55,6 +55,32 @@ const Page = () => {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(()=>{
+      const handleGETData = async () => {
+
+    try {
+      const { data } = await axios.get("/api/partner/onboarding/vehicle", {
+      });
+
+      setVehicleModel(data.vehicleModel)
+      setSelected(data.type)
+      setVehicleNumber(data.number)
+      
+      
+    } catch (error) {
+
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message || "Unable to save vehicle");
+      } else {
+        toast.error("Unable to save vehicle");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  handleGETData();
+  },[])
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">

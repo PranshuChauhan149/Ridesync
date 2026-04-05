@@ -67,6 +67,19 @@ const authConfig: NextAuthConfig = {
         token.name = user.name;
         token.email = user.email;
         token.role = user.role;
+      } else if (token.email) {
+        // Keep token role in sync with DB when role changes after login.
+        await connectDb();
+        const dbUser = await User.findOne({ email: token.email }).select(
+          "_id name email role"
+        );
+
+        if (dbUser) {
+          token.id = dbUser._id.toString();
+          token.name = dbUser.name;
+          token.email = dbUser.email;
+          token.role = dbUser.role;
+        }
       }
       return token;
     },
