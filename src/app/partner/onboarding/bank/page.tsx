@@ -2,8 +2,10 @@
 
 import React, { InputHTMLAttributes, useState } from 'react'
 import { motion } from "framer-motion"
-import { ArrowLeft, BadgeCheck, Hash, Landmark, LucideIcon, User, Wallet } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, Hash, Landmark, LucideIcon, Phone, User, Wallet } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import axios from 'axios'
+import toast from 'react-hot-toast'
 
 type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string
@@ -31,8 +33,10 @@ const Page = () => {
     accountHolder: "",
     accountNumber: "",
     ifsc: "",
+    mobileNumber: "",
     upi: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({
@@ -44,7 +48,39 @@ const Page = () => {
   const isValid =
     form.accountHolder &&
     form.accountNumber &&
-    form.ifsc;
+    form.ifsc &&
+    form.mobileNumber;
+
+  const handleSubmit = async () => {
+    if (!isValid || isSubmitting) {
+      toast.error("Please fill all required bank details");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { data } = await axios.post("/api/partner/onboarding/bank", {
+        accountHolder: form.accountHolder.trim(),
+        accountNumber: form.accountNumber.trim(),
+        ifsc: form.ifsc.trim().toUpperCase(),
+        mobileNumber: form.mobileNumber.trim(),
+        upi: form.upi.trim(),
+      });
+
+      console.log(data);
+      toast.success("Bank details saved successfully");
+      router.push("/");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message || "Unable to save bank details");
+      } else {
+        toast.error("Unable to save bank details");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className='min-h-screen bg-white flex items-center justify-center px-4'>
@@ -116,6 +152,16 @@ const Page = () => {
             className='uppercase'
           />
 
+          {/* Mobile Number */}
+          <Field
+            label='Mobile number'
+            icon={Phone}
+            name='mobileNumber'
+            value={form.mobileNumber}
+            onChange={handleChange}
+            placeholder='Enter mobile number'
+          />
+
           {/* UPI */}
           <Field
             label='UPI ID (optional)'
@@ -130,14 +176,16 @@ const Page = () => {
 
         {/* Button */}
         <button
-          disabled={!isValid}
+          type='button'
+          disabled={!isValid || isSubmitting}
+          onClick={handleSubmit}
           className={`w-full mt-6 py-3 rounded-xl font-medium transition
-            ${isValid
+            ${isValid && !isSubmitting
               ? "bg-black text-white hover:opacity-90"
               : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
         >
-          Continue
+          {isSubmitting ? "Saving..." : "Continue"}
         </button>
 
       </motion.div>

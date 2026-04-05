@@ -4,6 +4,7 @@ import React, { ChangeEvent, useId, useState } from 'react'
 import { motion } from "framer-motion"
 import { ArrowLeft, Upload } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 
 type DocumentKey = 'aadhar' | 'license' | 'rc'
 
@@ -55,6 +56,7 @@ const Page = () => {
     license: null,
     rc: null,
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>, type: DocumentKey) => {
     const file = event.target.files?.[0]
@@ -71,12 +73,39 @@ const Page = () => {
 
   const isAllUploaded = Boolean(files.aadhar && files.license && files.rc)
 
-  const handleContinue = () => {
-    if (!isAllUploaded) {
+  const handleContinue = async () => {
+    if (!isAllUploaded || isSubmitting) {
       return
     }
 
-    router.push('/')
+    const formData = new FormData()
+    formData.append('aadhar', files.aadhar as File)
+    formData.append('license', files.license as File)
+    formData.append('rc', files.rc as File)
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/partner/onboarding/documents', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast.error(data?.message || 'Unable to upload documents')
+        return
+      }
+
+      toast.success('Documents uploaded successfully')
+      router.push('/partner/onboarding/bank')
+    } catch (error) {
+      toast.error('Unable to upload documents')
+      console.log(error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -96,7 +125,7 @@ const Page = () => {
             <ArrowLeft size={18} />
           </button>
 
-          <p className='text-xs font-medium text-gray-500'>Step 3 of 3</p>
+          <p className='text-xs font-medium text-gray-500'>Step 2 of 3</p>
 
           <h1 className='mt-1 text-xl font-semibold'>Upload Documents</h1>
 
@@ -132,15 +161,15 @@ const Page = () => {
 
         <button
           type='button'
-          disabled={!isAllUploaded}
+          disabled={!isAllUploaded || isSubmitting}
           onClick={handleContinue}
           className={`mt-5 w-full rounded-xl py-3 font-medium transition ${
-            isAllUploaded
+            isAllUploaded && !isSubmitting
               ? 'bg-black text-white hover:opacity-90'
               : 'cursor-not-allowed bg-gray-200 text-gray-400'
           }`}
         >
-          Continue
+          {isSubmitting ? 'Uploading...' : 'Continue'}
         </button>
       </motion.div>
     </div>
