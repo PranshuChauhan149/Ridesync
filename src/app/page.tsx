@@ -12,14 +12,20 @@ export default async function Home() {
   
   return (
     <div className="w-full min-h-screen bg-white">
-       <Nav />
+       
 
       {userRole === "partner" ? (
-        <PartnerDashboard />
+       <>
+<Nav/>
+<PartnerDashboard />
+       </> 
       ) : userRole === "admin" ? (
         <AdminDashboard />
       ) : (
+        <>
+        <Nav/>
         <PublicHome />
+        </>
       )}
       
        <Footer/>

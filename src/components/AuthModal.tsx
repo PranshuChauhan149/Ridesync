@@ -62,7 +62,7 @@ const AuthModal = ({ open, onClose }: propType) => {
 
     setLoading(true);
     try {
-      await axios.post("/api/register", {
+      await axios.post("/api/auth/register", {
         name,
         email,
         password,
@@ -93,7 +93,7 @@ const AuthModal = ({ open, onClose }: propType) => {
     try {
       const normalizedOtp = otp.join("").replace(/\D/g, "").trim();
 
-      await axios.post("/api/verify-otp", {
+      await axios.post("/api/auth/verify-email", {
         email,
         otp: normalizedOtp,
       });
@@ -117,7 +117,7 @@ const AuthModal = ({ open, onClose }: propType) => {
 
     setResendLoading(true);
     try {
-      await axios.post("/api/resend-otp", { email });
+      await axios.post("/api/auth/resend-otp", { email });
       setOtp(Array(6).fill(""));
       toast.success("New OTP sent");
       document.getElementById("otp-0")?.focus();

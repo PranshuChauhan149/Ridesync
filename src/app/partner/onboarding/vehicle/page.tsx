@@ -69,14 +69,8 @@ const Page = () => {
       
       
     } catch (error) {
+console.log(error);
 
-      if (axios.isAxiosError(error)) {
-        toast.error(error.response?.data?.message || "Unable to save vehicle");
-      } else {
-        toast.error("Unable to save vehicle");
-      }
-    } finally {
-      setIsSubmitting(false);
     }
   };
   handleGETData();

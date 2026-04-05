@@ -41,7 +41,7 @@ const UploadBox = ({ title, subtitle, file, onChange }: UploadBoxProps) => {
         id={inputId}
         type='file'
         className='hidden'
-        accept='.jpg,.jpeg,.png,.pdf'
+      accept="image/*,.pdf"
         onChange={onChange}
       />
     </label>

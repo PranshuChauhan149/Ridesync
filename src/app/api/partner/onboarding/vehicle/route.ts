@@ -92,6 +92,7 @@ export async function POST(req: Request) {
     if (user.partnerOnboardingSteps < 1) {
       user.partnerOnboardingSteps = 1;
       user.role = "partner";
+      user.partnerStatus = "pending"
       await user.save();
     }
 

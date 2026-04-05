@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     if (user.partnerOnboardingSteps < 3) {
       user.partnerOnboardingSteps = 3;
     }
-
+    user.partnerStatus = "pending"
     await user.save();
 
     return Response.json(partnerBank, { status: 201 });

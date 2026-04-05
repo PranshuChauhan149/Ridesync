@@ -54,7 +54,7 @@ export async function POST(req: Request) {
           { status: 500 },
         );
       }
-      updatePayload.licenseUrl = url;
+      updatePayload.license = url;
     }
     if (rc) {
       const url = await uploadOnCloudinary(rc);
@@ -67,10 +67,11 @@ export async function POST(req: Request) {
     const partnerDocs = await PartnerDocs.findOneAndUpdate(
       { owner: user._id },
       { $set: updatePayload },
-      { upsert: true, new: true },
+      { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true },
     );
     if (user.partnerOnboardingSteps < 2) {
       user.partnerOnboardingSteps = 2;
+      user.partnerStatus = "pending"
       await user.save();
     }
     return Response.json(partnerDocs, { status: 201 });
