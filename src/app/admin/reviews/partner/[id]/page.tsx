@@ -38,6 +38,8 @@ const Page = () => {
     const [showApprove,setShowApprove] = useState(false);
     const [showReject,setShowReject] = useState(false);
     const [rejectionReason,setRejectionReason] = useState("")
+    const [isApproving, setIsApproving] = useState(false);
+    const [isRejecting, setIsRejecting] = useState(false);
   const handleGetPartner = async () => {
     try {
       const res = await axios.get(`/api/admin/reviews/partner/${id}`);
@@ -56,6 +58,13 @@ const Page = () => {
     handleGetPartner();
   }, []);
 
+  const normalizedPartnerStatus = (data?.partnerStatus || "").trim().toLowerCase();
+  const normalizedVehicleStatus = (vechileDatails?.status || "").trim().toLowerCase();
+  console.log("sdsdfsdfdsfsdf" ,normalizedVehicleStatus);
+  
+  const isPendingReview =
+    normalizedPartnerStatus === "pending" || normalizedVehicleStatus === "pending";
+
   if (loading) {
     return (
       <div className="min-h-screen grid place-items-center text-gray-600 text-lg font-medium">
@@ -65,6 +74,7 @@ const Page = () => {
   }
 
   const handleApprove = async ()=>{
+    setIsApproving(true);
     try {
         const response = await axios.get(`/api/admin/reviews/partner/${id}/approve`);
         toast.success(response.data?.message || "Partner approved successfully");
@@ -72,6 +82,8 @@ const Page = () => {
         await handleGetPartner();
     } catch (error) {
         toast.error(getApiErrorMessage(error, "Unable to approve partner"));
+    } finally {
+      setIsApproving(false);
     }
   }
 
@@ -82,6 +94,7 @@ const Page = () => {
       return;
     }
 
+    setIsRejecting(true);
     try {
       const response = await axios.post(`/api/admin/reviews/partner/${id}/reject`,{
             rejectionReason
@@ -92,6 +105,8 @@ const Page = () => {
       await handleGetPartner();
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Unable to reject partner"));
+    } finally {
+      setIsRejecting(false);
     }
   }
 
@@ -115,11 +130,11 @@ const Page = () => {
             </div>
           </div>
             {/* Status */}
-            {data?.partnerStatus === "approved" ? (
+            {normalizedPartnerStatus === "approved" ? (
               <div className="inline-flex items-center rounded-full bg-green-100 px-4 py-2 text-xs font-medium text-green-700">
                 Approved
               </div>
-            ) : data?.partnerStatus === "rejected" ? (
+            ) : normalizedPartnerStatus === "rejected" ? (
               <div className="inline-flex items-center rounded-full bg-red-100 px-4 py-2 text-xs font-medium text-red-700">
                 Rejected
               </div>
@@ -209,7 +224,7 @@ const Page = () => {
             </AnimatedCard>
 
 
-            {data?.partnerStatus == "pending" && 
+            {isPendingReview && 
             <motion.div
   className="bg-white border rounded-2xl shadow-lg p-5 space-y-4"
 >
@@ -273,9 +288,10 @@ const Page = () => {
           </button>
 
           <button onClick={handleApprove}
-            className="px-4 py-2 rounded-lg text-sm bg-green-600 text-white hover:bg-green-700 transition shadow-sm"
+            disabled={isApproving}
+            className="px-4 py-2 rounded-lg text-sm bg-green-600 text-white hover:bg-green-700 transition shadow-sm disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Yes, Approve
+            {isApproving ? "Approving..." : "Yes, Approve"}
           </button>
         </div>
       </motion.div>
@@ -324,9 +340,10 @@ const Page = () => {
           </button>
 
           <button  onClick={handleRejected}
-            className="px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-700 transition shadow-sm"
+            disabled={isRejecting}
+            className="px-4 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-700 transition shadow-sm disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Reject
+            {isRejecting ? "Rejecting..." : "Reject"}
           </button>
         </div>
       </motion.div>

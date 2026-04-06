@@ -41,9 +41,24 @@ const AdminDashboard = () => {
         console.log(error);
       }
     };
+    const handleGrtKyc = async () => {
+      try {
+        const { data } =  await axios.get("/api/admin/video-kyc/pending");
+        console.log(data);
+       setPendingKyc(data ?? [])
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+     
 
     handleGetData();
+    handleGrtKyc();
   }, []);
+
+
+
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-100 via-gray-100 to-zinc-200 text-gray-900">

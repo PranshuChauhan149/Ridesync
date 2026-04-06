@@ -3,6 +3,7 @@ import { connectDb } from "@/lib/db";
 import PartnerBank from "@/models/partnerBank.modals";
 import PartnerDocs from "@/models/partnerDocs.modals";
 import User from "@/models/user.models";
+import Vehicle from "@/models/vehicle.modal";
 import { NextRequest } from "next/server";
 export async function GET(req:NextRequest,context:{params : Promise<{id:string}>}) {
     try {
@@ -26,17 +27,22 @@ export async function GET(req:NextRequest,context:{params : Promise<{id:string}>
             }
             const partnerDocs = await PartnerDocs.findOne({owner:partner._id});
             const partnerBank = await PartnerBank.findOne({owner:partner._id})
-            if(!partnerDocs || !partnerBank){
+            const partnerVehicle = await Vehicle.findOne({ owner: partner._id });
+
+            if(!partnerDocs || !partnerBank || !partnerVehicle){
               return Response.json({ message: "partner did not compelete on boarding steps" }, { status: 400 });
 
             }
             partner.partnerStatus = "approved"
+            partner.videoKycStatus = "pending"
             partner.partnerOnboardingSteps = 4;
             await partner.save();
             partnerDocs.status = "approved"
             await partnerDocs.save();
             partnerBank.status = "verified"
             await partnerBank.save();
+            partnerVehicle.status = "approved";
+            await partnerVehicle.save();
 
 
               return Response.json({ message: "partner approved successfully" }, { status: 200 });

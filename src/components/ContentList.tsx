@@ -3,6 +3,9 @@ import React from 'react'
 import { motion } from "motion/react"
 import { CheckCircle2, Mail, Truck, User, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import axios from 'axios'
+import { RootState } from '@/redux/store'
+import { useSelector } from 'react-redux'
 
 type ContentListProps = {
   data: any[]
@@ -10,6 +13,8 @@ type ContentListProps = {
 }
 
 const ContentList = ({ data, type }: ContentListProps) => {
+    const { userData } = useSelector((state: RootState) => state.user);
+
     const router = useRouter();
   if (data?.length === 0) {
     return (
@@ -28,6 +33,18 @@ const ContentList = ({ data, type }: ContentListProps) => {
         </p>
       </motion.div>
     )
+  }
+
+
+  const handleStartVideoKyc = async(id:any)=>{
+    try {
+      const res = await axios.get(`/api/admin/video-kyc/start/${id}`)
+      window.location.reload();
+      
+    } catch (error) {
+      console.log(error);
+      
+    }
   }
 
   return (
@@ -110,9 +127,22 @@ const ContentList = ({ data, type }: ContentListProps) => {
                     <p className="text-xs text-gray-600 mt-0.5 sm:mt-1 truncate">{item.email || 'Pending verification'}</p>
                   </div>
                 </div>
-                <button className="px-2.5 sm:px-3 py-1 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors shrink-0 sm:ml-0 ml-11">
-                  Verify
-                </button>
+                
+                {
+  ["pending", "not_required"].includes(item.videoKycStatus) ? (
+    <button onClick={()=>handleStartVideoKyc(item._id)} className="px-3 py-1 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition shadow-sm sm:ml-0 ml-11">
+      Start Video KYC
+    </button>
+  ) : ["inprogess", "in_progress", "in_progess"].includes(item.videoKycStatus) ? (
+    <button onClick={()=>router.push(`/video-kyc/${item?.videoKycRoomId}`)} className="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition shadow-sm sm:ml-0 ml-11">
+      Join Call
+    </button>
+  ) : (
+    <button className="px-3 py-1 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition shadow-sm sm:ml-0 ml-11">
+      Review
+    </button>
+  )
+}
               </div>
             </motion.div>
           ))

@@ -120,14 +120,14 @@ const Page = () => {
           <button
             type='button'
             onClick={() => router.back()}
-            className='absolute left-0 top-0 flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 transition hover:bg-gray-100'
+            className=' bg-black absolute left-0 top-0 flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 transition hover:bg-gray-100'
           >
             <ArrowLeft size={18} />
           </button>
 
           <p className='text-xs font-medium text-gray-500'>Step 2 of 3</p>
 
-          <h1 className='mt-1 text-xl font-semibold'>Upload Documents</h1>
+          <h1 className='mt-1 text-xl font-semibold text-black'>Upload Documents</h1>
 
           <p className='text-sm text-gray-500'>Required for verification</p>
         </div>

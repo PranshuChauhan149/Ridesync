@@ -1,17 +1,27 @@
 import mongoose from "mongoose";
 
+type VideoKycStatus =
+  | "not_required"
+  | "pending"
+  | "inprogess"
+  | "approved"
+  | "rejected";
+
 export interface IUser extends Document {
   name: string;
   email: string;
   password?: string;
   role: "user" | "partner" | "admin";
-  isEmailVerified?:boolean;
-  otp?:string;
-  otpExpiresAt?:Date;
-  partnerOnboardingSteps:number
-  mobileNumber?:string
-  partnerStatus:"pending" | "approved" | "rejected"
-  rejectionReason:string;
+  isEmailVerified?: boolean;
+  otp?: string;
+  otpExpiresAt?: Date;
+  partnerOnboardingSteps: number;
+  mobileNumber?: string;
+  partnerStatus: "pending" | "approved" | "rejected";
+  rejectionReason: string;
+  videoKycStatus: VideoKycStatus;
+  videoKycRoomId: string;
+  videoKycRejectionReason: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,35 +45,44 @@ const userSchema = new mongoose.Schema<IUser>(
       default: "user",
       enum: ["user", "partner", "admin"],
     },
-    isEmailVerified:{
-      type:Boolean,
-      default:false
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
     },
-    otp:{
-      type:String,
+    otp: {
+      type: String,
     },
-    otpExpiresAt:{
-      type:Date
+    otpExpiresAt: {
+      type: Date,
     },
-    partnerOnboardingSteps:{
-      type:Number,
-      min:0,
-      max:8,
-      default:0
+    partnerOnboardingSteps: {
+      type: Number,
+      min: 0,
+      max: 8,
+      default: 0,
     },
-    mobileNumber:{
-      type:String
+    mobileNumber: {
+      type: String,
     },
-    partnerStatus:{
-      type:String,
-      default:"pending",
-      enum:["pending","approved","rejected"]
+    partnerStatus: {
+      type: String,
+      default: "pending",
+      enum: ["pending", "approved", "rejected"],
     },
-    rejectionReason:{
-      type:String
-    }
+    rejectionReason: {
+      type: String,
+    },
+    videoKycStatus: {
+      type: String,
+      default: "not_required",
+      enum: ["not_required", "pending", "inprogess", "approved", "rejected"],
+    },
+    videoKycRoomId: {
+      type: String,
+    },
+    videoKycRejectionReason: { type: String },
   },
-  
+
   {
     timestamps: true,
   },
