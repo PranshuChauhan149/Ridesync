@@ -93,7 +93,7 @@ const ContentList = ({ data, type }: ContentListProps) => {
                       <span className="text-xs font-medium text-amber-700 capitalize">{item.vehicleTpye}</span>
                     </div>
                   )}
-                  <button onClick={()=>{type=="partner" ? router.push(`/admin/reviews/partner/${item._id}`) : router.push(`/admin/reviews/vehicles${item._id}`)} } className="px-2.5 sm:px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shrink-0">
+                  <button onClick={() => router.push(`/admin/reviews/partner/${item._id}`)} className="px-2.5 sm:px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shrink-0">
                     Review
                   </button>
                 </div>
@@ -123,8 +123,8 @@ const ContentList = ({ data, type }: ContentListProps) => {
                     <AlertCircle size={16} className="sm:w-5 sm:h-5 text-purple-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{item.name || 'KYC Submission'}</p>
-                    <p className="text-xs text-gray-600 mt-0.5 sm:mt-1 truncate">{item.email || 'Pending verification'}</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{item.name || item.owner?.name || 'KYC Submission'}</p>
+                    <p className="text-xs text-gray-600 mt-0.5 sm:mt-1 truncate">{item.email || item.owner?.email || 'Pending verification'}</p>
                   </div>
                 </div>
                 
@@ -163,11 +163,14 @@ const ContentList = ({ data, type }: ContentListProps) => {
                     <Truck size={16} className="sm:w-5 sm:h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{item.type || 'Vehicle'} - {item.registrationNumber || 'N/A'}</p>
-                    <p className="text-xs text-gray-600 mt-0.5 sm:mt-1 truncate">{item.ownerName || 'Owner'} | {item.model || 'Model info'}</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{item.type || "Vehicle"} - {item.number || "N/A"}</p>
+                    <p className="text-xs text-gray-600 mt-0.5 sm:mt-1 truncate">{item.owner?.name || item.name || "Owner"} | {item.vehicleModel || item.model || "Model info"}</p>
                   </div>
                 </div>
-                <button className="px-2.5 sm:px-3 py-1 text-xs font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors shrink-0 sm:ml-0 ml-11">
+                <button
+                  onClick={() => router.push(`/admin/reviews/vehicles/${item._id}`)}
+                  className="px-2.5 sm:px-3 py-1 text-xs font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors shrink-0 sm:ml-0 ml-11"
+                >
                   Review
                 </button>
               </div>

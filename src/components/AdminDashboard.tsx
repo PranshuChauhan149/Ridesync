@@ -30,6 +30,7 @@ const AdminDashboard = () => {
       try {
         const { data } = await axios.get("/api/admin/dashboard");
         console.log(data);
+        setVehicleReviews(data.pendingVehicle)
         setStats({
           totalPartner: data?.stats?.totalPartner ?? 0,
           totalApprovedPartners: data?.stats?.totalApprovedPartners ?? 0,
