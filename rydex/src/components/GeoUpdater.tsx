@@ -10,7 +10,7 @@ const GeoUpdater = ({ userId }: { userId: string }) => {
 
     socketRef.current = getSocket()
 
-    socketRef.current.emit("identity", {data: userId })
+    socketRef.current.emit("identity", userId )
   }, [userId])
 
     

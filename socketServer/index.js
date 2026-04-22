@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import http from "http";
 import { Server } from "socket.io";
+import User from "./model/user.modal.js";
 
 dotenv.config();
 
@@ -23,7 +24,6 @@ const connectDb = async () => {
 };
 
 const app = express();
-
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -36,12 +36,25 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
-  socket.on("identity",(data)=>{
-    console.log(data) ;
-    
-  })
 
-  socket.on("disconnect", () => {
+  socket.on("identity", async (userId) => {
+    await User.findByIdAndUpdate(userId, {
+      socketId: socket.id,
+      isOnline: true,
+    });
+
+    console.log(userId);
+  });
+
+  socket.on("disconnect", async () => {
+    await User.findOneAndUpdate(
+      { socketId: socket.id },
+      {
+        socketId: null,
+        isOnline: false,
+      }
+    );
+
     console.log("User disconnected:", socket.id);
   });
 });
@@ -50,5 +63,3 @@ server.listen(port, async () => {
   await connectDb();
   console.log(`Server started on port ${port}`);
 });
-
-// dfs
