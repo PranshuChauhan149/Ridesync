@@ -6,11 +6,12 @@ import { signOut } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Bike, Car, ChevronRight, Menu, Truck, X } from "lucide-react";
 import type { AppDispatch, RootState } from "../redux/store";
 import AuthModal from "./AuthModal";
+import axios from "axios";
 
 const navItems = ["Home", "Bookings", "About", "Contact"];
 
@@ -19,6 +20,8 @@ const Nav = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const pathname = usePathname();
+  const [pendingCount,setPendingCount] = useState(0);
+  
   const dispatch = useDispatch<AppDispatch>();
   const { userData } = useSelector((state: RootState) => state.user);
   const router = useRouter();
@@ -30,6 +33,27 @@ const Nav = () => {
   };
 
   const initial = userData?.name?.charAt(0)?.toUpperCase() ?? "U";
+
+  const fetchCount = async () => {
+  try {
+    const { data } = await axios.post(
+      "/api/partner/bookings/pending-requests-count"
+    );
+console.log(data);
+
+    if (data.success) {
+      setPendingCount(data.count);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+useEffect(() => {
+  if (userData?.role === "partner") {
+    fetchCount();
+  }
+}, [userData]);
 
   return (
     <>
@@ -45,25 +69,74 @@ const Nav = () => {
             <Image src="/logo.jpeg" alt="logo" width={44} height={44} priority />
           </Link>
 
-          <div className="hidden items-center gap-6 lg:flex">
-            {navItems.map((item) => {
-              const href = item === "Home" ? "/" : `/${item.toLowerCase()}`;
-              const isActive = pathname === href;
+         <div className="hidden items-center gap-6 lg:flex">
+  {userData?.role === "partner" ? (
+    <>
+      <Link
+        href="/"
+        className={`text-sm transition ${
+          pathname === "/" ? "text-yellow-400" : "text-white hover:text-yellow-300"
+        }`}
+      >
+        Home
+      </Link>
 
-              return (
-                <Link
-                  key={item}
-                  href={href}
-                  className={`text-sm transition ${
-                    isActive ? "text-yellow-400" : "text-white hover:text-yellow-300"
-                  }`}
-                >
-                  {item}
-                </Link>
-              );
-            })}
-          </div>
+      <Link
+        href="/partner/pending-requests"
+        className={`inline-flex items-center gap-1 text-sm transition ${
+          pathname === "/partner/pending-requests"
+            ? "text-yellow-400"
+            : "text-white hover:text-yellow-300"
+        }`}
+      >
+        <span>Pending Requests</span>
+        <span className="inline-flex min-w-5.5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold leading-5 text-white">
+          {pendingCount}
+        </span>
+      </Link>
+      <Link
+        href="/partner/bookings"
+        className={`text-sm transition ${
+          pathname === "/partner/bookings"
+            ? "text-yellow-400"
+            : "text-white hover:text-yellow-300"
+        }`}
+      >
+        Bookings
+      </Link>
 
+      <Link
+        href="/partner/active-ride"
+        className={`text-sm transition ${
+          pathname === "/partner/active-ride"
+            ? "text-yellow-400"
+            : "text-white hover:text-yellow-300"
+        }`}
+      >
+        Active Ride
+      </Link>
+    </>
+  ) : (
+    navItems.map((item) => {
+      const href = item === "Home" ? "/" : `/${item.toLowerCase()}`;
+      const isActive = pathname === href;
+
+      return (
+        <Link
+          key={item}
+          href={href}
+          className={`text-sm transition ${
+            isActive
+              ? "text-yellow-400"
+              : "text-white hover:text-yellow-300"
+          }`}
+        >
+          {item}
+        </Link>
+      );
+    })
+  )}
+</div>
           <div className="flex items-center gap-3">
             {!userData && (
               <button
