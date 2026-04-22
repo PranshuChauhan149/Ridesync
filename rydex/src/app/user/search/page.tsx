@@ -1,10 +1,42 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import SearchMap from "../../../components/SearchMap"
-import { ArrowLeft, CarFront, MapPin, Phone, Route } from "lucide-react"
-import { motion } from "motion/react"
+import { ArrowLeft, Bike, Car, CarFront, MapPin, Phone, RefreshCw, Route, Search, Truck, Zap } from "lucide-react"
+import { AnimatePresence, motion } from "motion/react"
 import { useRouter, useSearchParams } from "next/navigation"
+import axios from 'axios'
+import {  vehicleType } from '@/models/vehicle.modal'
+import VecicleCard from '@/components/VecicleCard'
+
+
+
+
+
+const VEHICLE_META: any = {
+  bike: { label: "Bike", Icon: Bike },
+  auto: { label: "Auto", Icon: Car },
+  car: { label: "Car", Icon: Car },
+  loading: { label: "Loading", Icon: Truck },
+  truck: { label: "Truck", Icon: Truck },
+}
+
+ interface IVehicle  {
+  owner: string;
+  type: vehicleType;
+  vehicleModel: string;
+  number: string;
+  imageUrl?: string;
+  baseFare?: number;
+  waitingCharge?: number;
+  pricePerKM?: number;
+  status: "approved" | "pending" | "rejected";
+  rejectedReason?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 
 const page = () => {
   const params = useSearchParams()
@@ -15,12 +47,14 @@ const page = () => {
   const [distance, setDistance] = useState<number | null>(null)
 
   const mobile = params.get("mobile") || "Not provided"
-  const vehicle = params.get("vehicle") || "Not provided"
+  const vehicle = params.get("vehicle") || ""
   const pickUpLat = params.get("pickuplat") || "Not provided"
   const pickUpLon = params.get("pickuplon") || "Not provided"
   const dropLat = params.get("droplat") || "Not provided"
   const dropLon = params.get("droplon") || "Not provided"
-
+  const [vehicles,setVehicle] = useState<IVehicle[]>([]);
+const meta = VEHICLE_META[vehicle];
+  const [loading,setLoading] = useState(false)
   const routeStats = [
     {
       label: "Distance",
@@ -39,6 +73,40 @@ const page = () => {
     },
   ]
 
+
+const getNearByVehicles = async (
+  latitude: number,
+  longitude: number,
+  vehicleType: string | null
+) => {
+  try {
+    setLoading(true)
+
+    const { data } = await axios.post("/api/vehicles/near-by", {
+      latitude,
+      longitude,
+      vehicleType,
+    })
+
+    setVehicle(data.vehicles || [])
+    setLoading(false)
+
+    console.log(data)
+  } catch (error) {
+    setLoading(false)
+    console.log(error)
+  }
+}
+
+useEffect(() => {
+  if (!pickUpLat || !pickUpLon) return
+
+  getNearByVehicles(
+    Number(pickUpLat),
+    Number(pickUpLon),
+    vehicle
+  )
+}, [pickUpLat, pickUpLon, vehicle])
   return (
     <div className="min-h-screen bg-zinc-100 text-zinc-900 overflow-x-hidden">
       <div className="absolute left-5 top-5 z-50 sm:left-6 sm:top-6">
@@ -130,10 +198,115 @@ const page = () => {
                     </div>
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <InfoCard label="Pickup coordinates" value={`${pickUpLat}, ${pickUpLon}`} icon={MapPin} />
-                    <InfoCard label="Drop coordinates" value={`${dropLat}, ${dropLon}`} icon={MapPin} />
-                  </div>
+                 <div>
+  <h2>
+    {loading
+      ? "Finding Vehicle"
+      : vehicles.length > 0
+      ? "Available"
+      : "No Nearby Vehicles"}
+  </h2>
+  {
+    meta && <div className='text-zinc-500 text-xs mt-0.5'>{meta.label} rides near your pickup </div>
+  }
+</div>
+<AnimatePresence mode="wait">
+  {loading ? (
+    <motion.div
+      key="searching"
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.85 }}
+      className="flex items-center gap-2 bg-zinc-100 border border-zinc-200 px-3 py-1.5 rounded-full"
+    >
+      <div />
+      <span>Searching...</span>
+    </motion.div>
+  ) : vehicles.length > 0 ? (
+    <motion.div
+      key="live"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full"
+    >
+      <Zap
+        size={11}
+        className="text-emerald-600 fill-emerald-600"
+      />
+      <span className="text-emerald-700 text-xs font-bold">
+        Live
+      </span>
+    </motion.div>
+  ) : null}
+</AnimatePresence>
+<AnimatePresence>
+   {!loading && vehicles.length === 0 && (
+  <motion.div
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0 }}
+    className="flex flex-col items-center justify-center py-14 text-center"
+  >
+    <div className="w-20 h-20 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center mb-4">
+      <Search
+        size={26}
+        className="text-zinc-400"
+      />
+    </div>
+
+    <p className="text-zinc-900 font-bold text-base mb-1">
+      Vehicles Not Found
+    </p>
+
+    <p className="text-zinc-400 text-sm max-w-xs leading-relaxed">
+      {meta?.label || "Vehicle"} drivers are available near your pickup right now.
+    </p>
+    <button
+  onClick={() => getNearByVehicles(Number(pickUpLat), Number(pickUpLon), vehicle)}
+  className="flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 shadow-sm hover:bg-zinc-50 transition"
+>
+  <RefreshCw size={16} />
+  Refresh
+</button>
+  </motion.div>
+)}
+</AnimatePresence>
+
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+  {vehicles.map((v, i) => (
+    <motion.div
+      key={i}
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        delay: i * 0.06,
+        duration: 0.38,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+    >
+      <VecicleCard
+        vehicle={v}
+        distance={distance ?? undefined}
+      onBook={() => {
+  const url = new URLSearchParams({
+    pickUp,
+    drop,
+    vehicle: v.type,
+    driverId: String(v.owner),
+    fare: String(v.baseFare + v.pricePerKM * distance),
+    pickUpLat: String(pickUpLat),
+    pickUpLon: String(pickUpLon),
+    dropLat: String(dropLat),
+    dropLon: String(dropLon),
+    mobile: String(mobile),
+  })
+
+  router.push(`/user/checkout?${url.toString()}`)
+}}
+      />
+    </motion.div>
+  ))}
+</div>
                 </div>
               </div>
 
