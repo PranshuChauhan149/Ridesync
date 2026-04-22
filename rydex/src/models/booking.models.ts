@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 
 type BookingStatus =
+  | "idle"
   | "requested"
   | "awaiting_payment"
   | "confirmed"
@@ -10,11 +11,7 @@ type BookingStatus =
   | "rejected"
   | "expired";
 
-type PaymentStatus =
-  | "pending"
-  | "paid"
-  | "cash"
-  | "failed";
+type PaymentStatus = "pending" | "paid" | "cash" | "failed";
 
 interface IBooking {
   user: mongoose.Types.ObjectId;
@@ -129,6 +126,7 @@ const bookingSchema = new Schema<IBooking>(
     bookingStatus: {
       type: String,
       enum: [
+        "idle",
         "requested",
         "awaiting_payment",
         "confirmed",
@@ -138,7 +136,7 @@ const bookingSchema = new Schema<IBooking>(
         "rejected",
         "expired",
       ],
-      default: "requested",
+      default: "idle",
     },
 
     paymentStatus: {
@@ -159,34 +157,29 @@ const bookingSchema = new Schema<IBooking>(
 
     pickUpOtp: {
       type: String,
-      required: true,
     },
 
     pickUpOtpExpires: {
       type: Date,
-      required: true,
     },
 
     dropOtp: {
       type: String,
-      required: true,
     },
 
     dropOtpExpires: {
       type: Date,
-      required: true,
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 bookingSchema.index({ pickUpLocation: "2dsphere" });
 bookingSchema.index({ dropLocation: "2dsphere" });
 
 const Booking =
-  mongoose.models.Booking ||
-  mongoose.model<IBooking>("Booking", bookingSchema);
+  mongoose.models.Booking || mongoose.model<IBooking>("Booking", bookingSchema);
 
 export default Booking;

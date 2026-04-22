@@ -22,6 +22,7 @@ const VEHICLE_META: any = {
 }
 
  interface IVehicle  {
+  _id:string
   owner: string;
   type: vehicleType;
   vehicleModel: string;
@@ -288,12 +289,14 @@ useEffect(() => {
         vehicle={v}
         distance={distance ?? undefined}
       onBook={() => {
+  const computedFare = (v.baseFare || 0) + (v.pricePerKM || 0) * (distance ?? 0)
   const url = new URLSearchParams({
     pickUp,
     drop,
     vehicle: v.type,
+    vehicleId:String(v._id),
     driverId: String(v.owner),
-    fare: String(v.baseFare + v.pricePerKM * distance),
+    fare: String(Math.round(computedFare)),
     pickUpLat: String(pickUpLat),
     pickUpLon: String(pickUpLon),
     dropLat: String(dropLat),

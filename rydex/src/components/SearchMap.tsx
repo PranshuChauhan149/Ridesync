@@ -188,12 +188,22 @@ const SearchMap = ({ pickUp, drop, onChange, onDistance }: props) => {
   const geoCoding = async (q: string): Promise<[number, number] | null> => {
     try {
       const { data } = await axios.get(
-        `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1`
+        "https://api.geoapify.com/v1/geocode/search",
+        {
+          params: {
+            text: q,
+            apiKey: process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY,
+            filter: "countrycode:in",
+            limit: 1,
+            format: "json",
+          },
+        },
       );
 
-      const [lon, lat] = data.features[0].geometry.coordinates;
+      if (!data?.results?.length) return null;
 
-      return [lat, lon];
+      const point = data.results[0];
+      return [point.lat, point.lon];
     } catch (error) {
       console.error(error);
       return null;
@@ -202,16 +212,27 @@ const SearchMap = ({ pickUp, drop, onChange, onDistance }: props) => {
 
   const reverseGeoCoding = async (lat: number, lon: number) => {
     const { data } = await axios.get(
-      `https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`
+      "https://api.geoapify.com/v1/geocode/reverse",
+      {
+        params: {
+          lat,
+          lon,
+          apiKey: process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY,
+          filter: "countrycode:in",
+        },
+      },
     );
 
-    if (!data.features.length) return;
+    if (!data?.features?.length) return;
 
     const p = data.features[0].properties;
 
-    return [p.name, p.street, p.city, p.state, p.country]
-      .filter(Boolean)
-      .join(", ");
+    return (
+      p.formatted ||
+      [p.address_line1, p.address_line2, p.city, p.state, p.postcode, p.country]
+        .filter(Boolean)
+        .join(", ")
+    );
   };
 
 const loadRoute = async (

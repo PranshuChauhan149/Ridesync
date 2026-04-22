@@ -93,37 +93,51 @@ const Page = () => {
       }
 
       const { data } = await axios.get(
-        `https://photon.komoot.io/api/?q=${encodeURIComponent(q.trim())}&limit=8&lang=en`,
+        "https://api.geoapify.com/v1/geocode/autocomplete",
+        {
+          params: {
+            text: q.trim(),
+            apiKey: process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY,
+            filter: "countrycode:in",
+            limit: 5,
+            format: "json",
+          },
+        },
       );
 
-      const results: Place[] = (data.features ?? []).map((f: any) => {
-        const p = f.properties;
+      console.log(data);
 
-        const fullAddress = [
-          p.name,
-          p.housenumber,
-          p.street,
-          p.suburb,
-          p.district,
-          p.city,
-          p.state,
-          p.postcode,
-          p.country,
-        ]
-          .filter(Boolean)
-          .join(", ");
+      const source = data?.results || data?.features || [];
+
+      const results: Place[] = source.map((item: any) => {
+        const p = item?.properties || item;
+        const lat = p?.lat ?? item?.geometry?.coordinates?.[1];
+        const lng = p?.lon ?? item?.geometry?.coordinates?.[0];
+
+        const fullAddress =
+          p?.formatted ||
+          [
+            p?.address_line1,
+            p?.address_line2,
+            p?.city,
+            p?.state,
+            p?.postcode,
+            p?.country,
+          ]
+            .filter(Boolean)
+            .join(", ");
 
         return {
-          id: p.osm_id || Math.random().toString(),
+          id: String(p?.place_id || p?.osm_id || Math.random()),
           name: fullAddress,
-          city: p.city || "",
-          state: p.state || "",
-          country: p.country || "",
-          countrycode: p.countrycode || "",
-          lat: f.geometry.coordinates[1],
-          lng: f.geometry.coordinates[0],
+          city: p?.city || "",
+          state: p?.state || "",
+          country: p?.country || "",
+          countrycode: p?.country_code || p?.countrycode || "",
+          lat,
+          lng,
         };
-      });
+      }).filter((place: Place) => typeof place.lat === "number" && typeof place.lng === "number");
 
       if (countryFilter && countryFilter.trim()) {
         const normalizedCountry = countryFilter.trim().toLowerCase();
@@ -165,38 +179,44 @@ const Page = () => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          const { latitude, longitude } = position.coords;
+          const coords = position.coords;
 
           const { data } = await axios.get(
-            `https://photon.komoot.io/reverse?lat=${latitude}&lon=${longitude}`,
+            "https://api.geoapify.com/v1/geocode/reverse",
+            {
+              params: {
+                lat: coords.latitude,
+                lon: coords.longitude,
+                apiKey: process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY,
+                filter: "countrycode:in",
+              },
+            },
           );
 
-          if (data?.features?.length > 0) {
+          console.log(data);
+
+          if (data?.features?.length) {
             const p = data.features[0].properties;
+            const fullAddress =
+              p.formatted ||
+              [
+                p.address_line1,
+                p.address_line2,
+                p.city,
+                p.state,
+                p.postcode,
+                p.country,
+              ]
+                .filter(Boolean)
+                .join(", ");
 
-            const fullAddress = [
-              p.name,
-              p.housenumber,
-              p.street,
-              p.suburb,
-              p.district,
-              p.city,
-              p.state,
-              p.postcode,
-              p.country,
-            ]
-              .filter(Boolean)
-              .join(", ");
-
-            setPickUpCountry(p.country);
-            setPickUpLat(latitude);
-            setPickUpLon(longitude);
-
-            console.log(fullAddress);
-
+            setPickUpCountry(p.country || "India");
+            setPickUpLat(coords.latitude);
+            setPickUpLon(coords.longitude);
             setPickUp(fullAddress);
-            setLocating(false);
           }
+
+          setLocating(false);
         } catch (error) {
           setLocating(false);
 
