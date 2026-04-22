@@ -242,47 +242,49 @@ const loadRoute = async (
 };
   useEffect(() => {
     let active = true;
+    const timer = window.setTimeout(() => {
+      const initializeRoute = async () => {
+        if (!pickUp || !drop) {
+          setP1(undefined);
+          setP2(undefined);
+          setRoute([]);
+          setKm(0);
+          onDistance(0);
+          setReady(true);
+          return;
+        }
 
-    const initializeRoute = async () => {
-      if (!pickUp || !drop) {
-        setP1(undefined);
-        setP2(undefined);
-        setRoute([]);
-        setKm(0);
-        onDistance(0);
+        setReady(false);
+
+        const a = await geoCoding(pickUp);
+        const b = await geoCoding(drop);
+
+        if (!active) return;
+
+        if (!a || !b) {
+          setP1(undefined);
+          setP2(undefined);
+          setRoute([]);
+          setKm(0);
+          onDistance(0);
+          setReady(true);
+          return;
+        }
+
+        await loadRoute(a, b);
+        if (!active) return;
+
+        setP1(a);
+        setP2(b);
         setReady(true);
-        return;
-      }
+      };
 
-      setReady(false);
-
-      const a = await geoCoding(pickUp);
-      const b = await geoCoding(drop);
-
-      if (!active) return;
-
-      if (!a || !b) {
-        setP1(undefined);
-        setP2(undefined);
-        setRoute([]);
-        setKm(0);
-        onDistance(0);
-        setReady(true);
-        return;
-      }
-
-      await loadRoute(a, b);
-      if (!active) return;
-
-      setP1(a);
-      setP2(b);
-      setReady(true);
-    };
-
-    initializeRoute();
+      initializeRoute();
+    }, 400);
 
     return () => {
       active = false;
+      window.clearTimeout(timer);
     };
   }, [pickUp, drop]);
 

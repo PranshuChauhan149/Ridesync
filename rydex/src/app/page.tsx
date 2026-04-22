@@ -1,3 +1,4 @@
+import GeoUpdater from "@/components/GeoUpdater";
 import { auth } from "../auth";
 import AdminDashboard from "../components/AdminDashboard";
 import Footer from "../components/Footer";
@@ -13,6 +14,7 @@ export default async function Home() {
   return (
     <div className="w-full min-h-screen bg-white">
        
+      <GeoUpdater userId={session?.user?.id || ""} />
 
       {userRole === "partner" ? (
        <>

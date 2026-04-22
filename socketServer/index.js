@@ -6,7 +6,7 @@ import { Server } from "socket.io";
 
 dotenv.config();
 
-const port = process.env.PORT || 6000;
+const port = process.env.SOCKET_PORT || 8000;
 const mongodbUrl = process.env.MONGODB_URL;
 
 const connectDb = async () => {
@@ -28,7 +28,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.NEXT_BASE_URL,
+    origin: process.env.NEXT_BASE_URL || "http://localhost:3000",
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -50,3 +50,5 @@ server.listen(port, async () => {
   await connectDb();
   console.log(`Server started on port ${port}`);
 });
+
+// dfs

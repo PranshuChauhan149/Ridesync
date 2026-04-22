@@ -38,8 +38,8 @@ const ContentList = ({ data, type }: ContentListProps) => {
 
   const handleStartVideoKyc = async(id:any)=>{
     try {
-      const res = await axios.get(`/api/admin/video-kyc/start/${id}`)
-      window.location.reload();
+      await axios.get(`/api/admin/video-kyc/start/${id}`)
+      router.refresh();
       
     } catch (error) {
       console.log(error);

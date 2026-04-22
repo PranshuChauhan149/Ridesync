@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -44,6 +44,7 @@ type Place = {
 
 const Page = () => {
   const router = useRouter();
+  const searchTimerRef = useRef<{ pickup?: number; drop?: number }>({});
 
   const [vehicle, setVehicle] = useState<vehicleType | null>(null);
   const [mobile, setMobile] = useState("");
@@ -67,6 +68,18 @@ const Page = () => {
     Boolean,
   ).length;
   const canContinue = !!vehicle && mobile.length === 10 && !!pickUp && !!drop;
+
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current.pickup) {
+        window.clearTimeout(searchTimerRef.current.pickup);
+      }
+
+      if (searchTimerRef.current.drop) {
+        window.clearTimeout(searchTimerRef.current.drop);
+      }
+    };
+  }, []);
 
   const searchAddress = async (
     q: string,
@@ -127,6 +140,23 @@ const Page = () => {
       console.log(error);
       setResults([]);
     }
+  };
+
+  const scheduleSearchAddress = (
+    key: "pickup" | "drop",
+    q: string,
+    setResults: (r: Place[]) => void,
+    countryFilter?: string,
+  ) => {
+    const existingTimer = searchTimerRef.current[key];
+
+    if (existingTimer) {
+      window.clearTimeout(existingTimer);
+    }
+
+    searchTimerRef.current[key] = window.setTimeout(() => {
+      searchAddress(q, setResults, countryFilter);
+    }, 350);
   };
 
   const useCurrentLocation = () => {
@@ -399,7 +429,7 @@ const Page = () => {
                 <input 
                   onChange={(e) => {
                     setPickUp(e.target.value);
-                    searchAddress(e.target.value, setPickUpSugesstion);
+                    scheduleSearchAddress("pickup", e.target.value, setPickUpSugesstion);
                   }}
                   value={pickUp}
                   type="text"
@@ -459,7 +489,7 @@ const Page = () => {
                 <input disabled={!pickUpCountry}
                   onChange={(e) => {
                     setDrop(e.target.value);
-                    searchAddress(e.target.value, setDropSuggestion, pickUpCountry);
+                    scheduleSearchAddress("drop", e.target.value, setDropSuggestion, pickUpCountry);
                   }}
                   value={drop}
                   type="text"

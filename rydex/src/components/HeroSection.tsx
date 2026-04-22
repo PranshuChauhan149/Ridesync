@@ -1,5 +1,5 @@
 'use client'
-import React, { ReactNode, useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import {motion} from "motion/react"
 import { Bike, Bus, Car, Truck } from 'lucide-react'
 import { useSelector } from 'react-redux'
@@ -9,12 +9,9 @@ import { getSocket } from '../lib/socket'
 const HeroSection = ({onAuthRequired} : {onAuthRequired:()=>void}) => {
  const { userData } = useSelector((state: RootState) => state.user);
   const route = useRouter();
+  const lastEmittedUserId = useRef<string | null>(null);
 
 
-  useEffect(()=>{
-    const socket = getSocket();
-    socket.emit("identity",{userId:userData?._id})
-  },[userData])
 
   return (
     <div className='relative min-h-screen w-full overflow-hidden'>

@@ -24,17 +24,15 @@
     ],
     "paths": {
       "@/*": [
-        "rydex/src/*"
+        "./src/*"
       ]
     }
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    "rydex/.next/types/**/*.ts",
-    "rydex/.next/dev/types/**/*.ts",
-    "**/*.mts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.mts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
