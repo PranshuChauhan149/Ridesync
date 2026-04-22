@@ -1,10 +1,56 @@
 "use client";
 
-import { IBooking } from "@/models/booking.models";
+import { BookingStatus, PaymentStatus } from "@/models/booking.models";
 import axios from "axios";
 import { Clock, IndianRupee, Loader2, MapPin, Navigation } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+
+
+
+
+ interface IBooking {
+  _id:string
+  user: string,
+  driver:string
+  vehicle: string
+
+  pickUpAddress: string;
+  dropAddress: string;
+
+  pickUpLocation: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+
+  dropLocation: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+
+  fare: number;
+
+  userMobileNumber: string;
+  driverMobileNumber: string;
+
+  bookingStatus: BookingStatus;
+  paymentStatus: PaymentStatus;
+
+  adminCommission: number;
+  partnerAmount: number;
+
+  pickUpOtp: string;
+  pickUpOtpExpires: Date;
+
+  dropOtp: string;
+  dropOtpExpires: Date;
+  paymentDeadline:Date;
+
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+
 
 const Page = () => {
   const [bookings, setBookings] = useState<IBooking[]>([]);
@@ -26,6 +72,32 @@ const Page = () => {
       setLoading(false);
     }
   };
+
+
+  const handleAccept = async (id: string) => {
+  try {
+    const { data } = await axios.get(
+      `/api/partner/bookings/${id}/accept`
+    )
+
+    console.log(data)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const handleReject = async (id: string) => {
+  try {
+    const { data } = await axios.get(
+      `/api/partner/bookings/${id}/reject`
+    )
+
+    console.log(data)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 
   useEffect(() => {
     fetchPendingRequests();
@@ -125,11 +197,11 @@ const Page = () => {
 
   {/* Action Buttons */}
   <div className="flex gap-3 justify-end">
-    <button className="px-6 py-2 rounded-lg border border-black bg-white text-black font-medium hover:bg-black hover:text-green-500 transition">
+    <button onClick={()=>handleAccept(b._id)} className="px-6 py-2 rounded-lg border border-black bg-white text-black font-medium hover:bg-black hover:text-green-500 transition">
       Accept
     </button>
 
-    <button className="px-6 py-2 rounded-lg border border-black bg-black text-white font-medium hover:bg-white hover:text-black transition">
+    <button onClick={()=>handleReject(b._id)}  className="px-6 py-2 rounded-lg border border-black bg-black text-white font-medium hover:bg-white hover:text-black transition">
       Reject
     </button>
   </div>
