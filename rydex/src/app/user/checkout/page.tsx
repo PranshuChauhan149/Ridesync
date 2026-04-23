@@ -7,6 +7,7 @@ import {
   Car,
   Truck,
   MapPin,
+  ArrowLeft,
   IndianRupee,
   CreditCard,
   Banknote,
@@ -15,7 +16,7 @@ import {
   Loader2,
   CheckCircle,
 } from "lucide-react"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import axios from "axios"
 
 const VEHICLE_META: any = {
@@ -39,6 +40,7 @@ type Booking = {
 
 
 function page() {
+  const router = useRouter()
   const params = useSearchParams()
 
   const [pickUp] = useState(params.get("pickup") || params.get("pickUp") || "")
@@ -202,6 +204,29 @@ useEffect(()=>{
   return (
     <div className="min-h-screen bg-zinc-100 px-4 py-12">
       <div className="relative max-w-6xl mx-auto z-10">
+        <div className="mb-8">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 hover:border-zinc-900 hover:text-zinc-900 transition"
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
+
+          <div className="mt-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400">
+              Booking
+            </p>
+            <h1 className="text-5xl font-black tracking-tight text-zinc-900 mt-1">
+              Checkout
+            </h1>
+            <p className="text-zinc-500 text-sm mt-1">
+              Review your ride and confirm
+            </p>
+          </div>
+        </div>
+
         <div className="grid lg:grid-cols-2 gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
