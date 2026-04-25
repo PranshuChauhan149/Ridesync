@@ -118,7 +118,7 @@ useEffect(() => {
     </>
   ) : (
     navItems.map((item) => {
-      const href = item === "Home" ? "/" : `/${item.toLowerCase()}`;
+      const href = item === "Home" ? "/" : `/user/${item.toLowerCase()}`;
       const isActive = pathname === href;
 
       return (
@@ -206,7 +206,7 @@ useEffect(() => {
             <div className="absolute left-0 top-16 flex w-full flex-col gap-5 rounded-b-3xl bg-[#00000B]/95 p-5 shadow-2xl lg:hidden">
               <div className="flex flex-col gap-3">
                 {navItems.map((item) => {
-                  const href = item === "Home" ? "/" : `/${item.toLowerCase()}`;
+                  const href = item === "Home" ? "/user" : `/${item.toLowerCase()}`;
                   const isActive = pathname === href;
 
                   return (
