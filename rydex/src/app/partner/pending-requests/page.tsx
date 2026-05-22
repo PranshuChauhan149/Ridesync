@@ -5,6 +5,7 @@ import axios from "axios";
 import { Clock, IndianRupee, Loader2, MapPin, Navigation } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 
 
@@ -55,13 +56,13 @@ import { motion } from "framer-motion";
 const Page = () => {
   const [bookings, setBookings] = useState<IBooking[]>([]);
   const [loading, setLoading] = useState(false);
-
+const router = useRouter();
   const fetchPendingRequests = async () => {
     try {
       setLoading(true);
 
       const { data } = await axios.get("/api/partner/bookings/pending");
-
+      
       if (data.success) {
         setBookings(data.booking || []);
       }
@@ -79,8 +80,7 @@ const Page = () => {
     const { data } = await axios.get(
       `/api/partner/bookings/${id}/accept`
     )
-
-    console.log(data)
+router.push("/partner/booking")
   } catch (error) {
     console.log(error)
   }
@@ -91,8 +91,7 @@ const handleReject = async (id: string) => {
     const { data } = await axios.get(
       `/api/partner/bookings/${id}/reject`
     )
-
-    console.log(data)
+window.location.reload();
   } catch (error) {
     console.log(error)
   }

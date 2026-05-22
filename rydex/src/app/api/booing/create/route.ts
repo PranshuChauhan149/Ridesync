@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
       dropLocation,
       fare,
       mobileNumber,
+      force,
     } = await req.json();
 
     if (
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (existing) {
+    if (existing && !force) {
       return NextResponse.json(existing);
     }
 
