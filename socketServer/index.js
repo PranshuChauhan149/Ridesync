@@ -24,6 +24,7 @@ const connectDb = async () => {
 };
 
 const app = express();
+app.use(express.json());
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -32,6 +33,20 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
     credentials: true,
   },
+});
+
+app.post("/emit", async (req, res) => {
+  const { event, userId, data } = req.body;
+  try {
+    const user = await User.findById(userId);
+    if(user.socketId){
+
+      io.to(user.socketId).emit(event, data);
+    }
+    return res.json({success:true})
+  } catch (error) {
+    return res.json({success:false})
+  }
 });
 
 io.on("connection", (socket) => {
@@ -46,16 +61,14 @@ io.on("connection", (socket) => {
     console.log(userId);
   });
 
-
-  socket.on("update-location", async ({userId,latitude,longitude,})=>{
-  await User.findByIdAndUpdate(userId,{
-    location:{
-      type:"Point",
-      coordinates:[longitude,latitude]
-    }
-  })
-    
-  })
+  socket.on("update-location", async ({ userId, latitude, longitude }) => {
+    await User.findByIdAndUpdate(userId, {
+      location: {
+        type: "Point",
+        coordinates: [longitude, latitude],
+      },
+    });
+  });
 
   socket.on("disconnect", async () => {
     await User.findOneAndUpdate(
@@ -63,7 +76,7 @@ io.on("connection", (socket) => {
       {
         socketId: null,
         isOnline: false,
-      }
+      },
     );
 
     console.log("User disconnected:", socket.id);

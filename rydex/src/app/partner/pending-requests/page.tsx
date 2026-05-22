@@ -6,15 +6,14 @@ import { Clock, IndianRupee, Loader2, MapPin, Navigation } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { getSocket } from "@/lib/socket";
+import { log } from "util";
 
-
-
-
- interface IBooking {
-  _id:string
-  user: string,
-  driver:string
-  vehicle: string
+interface IBooking {
+  _id: string;
+  user: string;
+  driver: string;
+  vehicle: string;
 
   pickUpAddress: string;
   dropAddress: string;
@@ -45,24 +44,22 @@ import { useRouter } from "next/navigation";
 
   dropOtp: string;
   dropOtpExpires: Date;
-  paymentDeadline:Date;
+  paymentDeadline: Date;
 
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-
-
 const Page = () => {
   const [bookings, setBookings] = useState<IBooking[]>([]);
   const [loading, setLoading] = useState(false);
-const router = useRouter();
+  const router = useRouter();
   const fetchPendingRequests = async () => {
     try {
       setLoading(true);
 
       const { data } = await axios.get("/api/partner/bookings/pending");
-      
+
       if (data.success) {
         setBookings(data.booking || []);
       }
@@ -74,33 +71,37 @@ const router = useRouter();
     }
   };
 
-
   const handleAccept = async (id: string) => {
-  try {
-    const { data } = await axios.get(
-      `/api/partner/bookings/${id}/accept`
-    )
-router.push("/partner/bookings")
-  } catch (error) {
-    console.log(error)
-  }
-}
+    try {
+      const { data } = await axios.get(`/api/partner/bookings/${id}/accept`);
+      router.push("/partner/bookings");
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-const handleReject = async (id: string) => {
-  try {
-    const { data } = await axios.get(
-      `/api/partner/bookings/${id}/reject`
-    )
-window.location.reload();
-  } catch (error) {
-    console.log(error)
-  }
-}
-
+  const handleReject = async (id: string) => {
+    try {
+      const { data } = await axios.get(`/api/partner/bookings/${id}/reject`);
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     fetchPendingRequests();
   }, []);
+
+  useEffect(() => {
+    const socket = getSocket();
+    socket.on("new-booking", (data) => {
+      setBookings((prev) => [...prev, data]);
+    });
+    return () => {
+      socket.off("new-booking");
+    };
+  },[]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -181,30 +182,36 @@ window.location.reload();
 
                       {/* Fare Section */}
 
-  <div className="flex flex-col lg:items-end gap-5">
-  {/* Fare Section */}
-  <div className="text-left lg:text-right">
-    <p className="text-xs tracking-wide text-gray-400 uppercase mb-1">
-      Estimated Fare
-    </p>
+                      <div className="flex flex-col lg:items-end gap-5">
+                        {/* Fare Section */}
+                        <div className="text-left lg:text-right">
+                          <p className="text-xs tracking-wide text-gray-400 uppercase mb-1">
+                            Estimated Fare
+                          </p>
 
-    <div className="flex items-center gap-2 text-2xl font-bold text-black lg:justify-end">
-      <IndianRupee className="w-5 h-5 text-black" />
-      <span>{b.fare}</span>
-    </div>
-  </div>
+                          <div className="flex items-center gap-2 text-2xl font-bold text-black lg:justify-end">
+                            <IndianRupee className="w-5 h-5 text-black" />
+                            <span>{b.fare}</span>
+                          </div>
+                        </div>
 
-  {/* Action Buttons */}
-  <div className="flex gap-3 justify-end">
-    <button onClick={()=>handleAccept(b._id)} className="px-6 py-2 rounded-lg border border-black bg-white text-black font-medium hover:bg-black hover:text-green-500 transition">
-      Accept
-    </button>
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 justify-end">
+                          <button
+                            onClick={() => handleAccept(b._id)}
+                            className="px-6 py-2 rounded-lg border border-black bg-white text-black font-medium hover:bg-black hover:text-green-500 transition"
+                          >
+                            Accept
+                          </button>
 
-    <button onClick={()=>handleReject(b._id)}  className="px-6 py-2 rounded-lg border border-black bg-black text-white font-medium hover:bg-white hover:text-black transition">
-      Reject
-    </button>
-  </div>
-</div>
+                          <button
+                            onClick={() => handleReject(b._id)}
+                            className="px-6 py-2 rounded-lg border border-black bg-black text-white font-medium hover:bg-white hover:text-black transition"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

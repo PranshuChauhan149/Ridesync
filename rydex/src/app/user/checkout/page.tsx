@@ -19,6 +19,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { getSocket } from "@/lib/socket";
 
 const VEHICLE_META: any = {
   bike: { label: "Bike", Icon: Bike },
@@ -311,6 +312,16 @@ function page() {
       clearTimeout(t);
     };
   }, [status]);
+
+  useEffect(() => {
+      const socket = getSocket();
+      socket.on("accept-booking", (data) => {
+        setStatus(data);
+      });
+      return () => {
+        socket.off("new-booking");
+      };
+    },[]);
 
   return (
     <div className="min-h-screen bg-zinc-100 px-4 py-12">
