@@ -100,7 +100,7 @@ const AboutPage = () => {
           initial="hidden"
           animate="show"
           transition={{ duration: 0.65, ease: 'easeOut' }}
-          className="relative overflow-hidden rounded-[30px] border border-[#1c1f1b]/10 bg-[#1f3c34] p-7 text-[#f8f4ea] shadow-[0_18px_60px_rgba(17,24,39,0.22)] sm:p-10"
+          className="relative overflow-hidden rounded-[30px] border border-[#1c1f1b]/10 bg-[#1f3c34] p-6 text-[#f8f4ea] shadow-[0_18px_60px_rgba(17,24,39,0.18)] sm:p-8 lg:p-10"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.9, rotate: -8 }}
@@ -131,7 +131,7 @@ const AboutPage = () => {
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="mt-4 text-3xl font-black leading-tight sm:text-[2.55rem] lg:text-[3.2rem]"
+                className="mt-4 text-3xl font-black leading-tight sm:text-[2.55rem] lg:text-[3.1rem]"
               >
                 We are building the most human way to move across your city.
               </motion.h2>
@@ -152,7 +152,7 @@ const AboutPage = () => {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.45, duration: 0.6 }}
-              className="grid grid-cols-2 gap-3"
+              className="grid grid-cols-1 gap-3 sm:grid-cols-2"
             >
               {stats.map((item, index) => (
                 <motion.div
@@ -160,7 +160,7 @@ const AboutPage = () => {
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.55 + index * 0.08 }}
-                  className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur"
+                  className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm"
                 >
                   <p className="text-2xl font-black text-[#f8f4ea] sm:text-3xl">{item.value}</p>
                   <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[#f8f4ea]/75">{item.label}</p>
@@ -185,7 +185,7 @@ const AboutPage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
               transition={{ delay: index * 0.12, duration: 0.45 }}
-              className="rounded-3xl border border-[#1c1f1b]/10 bg-[#fffaf1]/90 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)]"
+              className="rounded-3xl border border-[#1c1f1b]/10 bg-[#fffaf1]/90 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 transition"
             >
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1f3c34] text-[#f8f4ea]">
                 <item.Icon size={20} />

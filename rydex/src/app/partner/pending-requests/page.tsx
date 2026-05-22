@@ -80,7 +80,7 @@ const router = useRouter();
     const { data } = await axios.get(
       `/api/partner/bookings/${id}/accept`
     )
-router.push("/partner/booking")
+router.push("/partner/bookings")
   } catch (error) {
     console.log(error)
   }
