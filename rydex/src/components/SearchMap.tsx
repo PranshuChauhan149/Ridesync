@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from 'react'
 import L from "leaflet"
 import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'

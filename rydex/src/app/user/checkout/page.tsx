@@ -318,8 +318,12 @@ function page() {
       socket.on("accept-booking", (data) => {
         setStatus(data);
       });
+      socket.on("reject-booking", (data) => {
+        setStatus(data);
+      });
       return () => {
         socket.off("new-booking");
+        socket.off("reject-booking");
       };
     },[]);
 
@@ -442,7 +446,7 @@ function page() {
             }}
             className="bg-white rounded-3xl border border-zinc-200 shadow-[0_4px_24px_rgba(0,0,0,0.07)] p-8"
           >
-            {status == "idle" && (
+            {(status == "idle" || status == "rejected") && (
               <div>
                 <div className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-400 mb-2">
                   Ready to go
