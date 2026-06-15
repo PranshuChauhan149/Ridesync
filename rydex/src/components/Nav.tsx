@@ -12,6 +12,7 @@ import { Bike, Car, ChevronRight, Menu, Truck, X } from "lucide-react";
 import type { AppDispatch, RootState } from "../redux/store";
 import AuthModal from "./AuthModal";
 import axios from "axios";
+import { getSocket } from "@/lib/socket";
 
 const navItems = ["Home", "Bookings", "About", "Contact"];
 
@@ -54,6 +55,21 @@ useEffect(() => {
     fetchCount();
   }
 }, [userData]);
+
+
+
+useEffect(() => {
+    const socket = getSocket();
+    socket.on("new-booking", (data) => {
+      setPendingCount(prev=>prev+1);
+    });
+    return () => {
+      socket.off("new-booking");
+    };
+  },[]);
+
+
+
 
   return (
     <>
