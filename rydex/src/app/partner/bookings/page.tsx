@@ -221,7 +221,7 @@ const PartnerBookings = () => {
 
                   <div className="flex items-center gap-3">
                     <div className="text-lg font-bold text-zinc-900">{formatAmount((booking as any).fare || (booking as any).totalAmount)}</div>
-                    <button onClick={() => router.push(`/partner/bookings/${booking._id}`)} className="px-3 py-2 rounded-md bg-blue-50 text-blue-600 border border-blue-100 text-sm font-semibold hover:bg-blue-100">Details</button>
+                    <button onClick={() => router.push(`/partner/active-ride`)} className="px-3 py-2 rounded-md bg-blue-50 text-blue-600 border border-blue-100 text-sm font-semibold hover:bg-blue-100">Details</button>
                   </div>
                 </div>
               </div>
@@ -234,3 +234,4 @@ const PartnerBookings = () => {
 };
 
 export default PartnerBookings;
+ 
