@@ -1,9 +1,30 @@
 "use client";
 
 import LiveRideMap from "@/components/LiveRideMap";
-import { IBooking } from "@/models/booking.models";
+import { BookingStatus, IBooking } from "@/models/booking.models";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+
+import {motion} from "motion/react";
+
+
+
+
+const MAP_STATUS: Record<
+  BookingStatus,
+  "arriving" | "ongoing" | "completed"
+> = {
+idle:"arriving",
+  requested: "arriving",
+  awaiting_payment: "arriving",
+  confirmed: "arriving",
+  started: "ongoing",
+  completed: "completed",
+  cancelled: "completed",
+  rejected: "completed",
+  expired: "completed",
+};
+
 
 const page = () => {
   const [booking, setBooking] = useState<IBooking | null>(null);
@@ -77,7 +98,12 @@ const page = () => {
           driverLocation={driverPos}
           pickUpLocation={pickUpPos}
           dropLocation={dropPos}
+          mapStatus={MAP_STATUS[booking?.bookingStatus]}
         />
+
+
+        
+
       </div>
     </div>
   );
