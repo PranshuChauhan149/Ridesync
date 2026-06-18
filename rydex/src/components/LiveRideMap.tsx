@@ -11,6 +11,12 @@ type Props = {
   pickUpLocation: [number, number] | null;
   dropLocation: [number, number] | null;
   mapStatus: string;
+  onstats?: (data: {
+    distanceToPickUp: number;
+    etaToPickUp: number;
+    distanceToDrop: number;
+    etaToDrop: number;
+  }) => void;
 };
 const pickUpIcon = L.divIcon({
   html: `
@@ -68,7 +74,7 @@ const LiveRideMap = ({
   driverLocation,
   pickUpLocation,
   dropLocation,
-  mapStatus,
+  mapStatus,onstats
 }: Props) => {
   const center = driverLocation ||
     pickUpLocation ||
@@ -105,62 +111,83 @@ const LiveRideMap = ({
     };
 
     const fetchRoutes = async () => {
-      try {
-        if (mapStatus === "arriving") {
-          const pickUpRoute = await getRoute({
-            startLat: drLat,
-            startLon: drLon,
-            endLat: pLat,
-            endLon: pLon,
-          });
+  try {
+    if (mapStatus === "arriving") {
+      const pickUpRoute = await getRoute({
+        startLat: drLat,
+        startLon: drLon,
+        endLat: pLat,
+        endLon: pLon,
+      });
 
-          const dropRoute = await getRoute({
-            startLat: pLat,
-            startLon: pLon,
-            endLat: dLat,
-            endLon: dLon,
-          });
+      const dropRoute = await getRoute({
+        startLat: pLat,
+        startLon: pLon,
+        endLat: dLat,
+        endLon: dLon,
+      });
 
-          if (pickUpRoute) {
-            setRouteToPickUp(
-              pickUpRoute.geometry.coordinates.map(
-                ([lon, lat]: [number, number]) => [lat, lon],
-              ),
-            );
-          }
-
-          if (dropRoute) {
-            setRouteToDrop(
-              dropRoute.geometry.coordinates.map(
-                ([lon, lat]: [number, number]) => [lat, lon],
-              ),
-            );
-          }
-        } else if (mapStatus === "ongoing") {
-          setRouteToPickUp([]);
-
-          const dropRoute = await getRoute({
-            startLat: drLat,
-            startLon: drLon,
-            endLat: dLat,
-            endLon: dLon,
-          });
-
-          if (dropRoute) {
-            setRouteToDrop(
-              dropRoute.geometry.coordinates.map(
-                ([lon, lat]: [number, number]) => [lat, lon],
-              ),
-            );
-          }
-        } else {
-          setRouteToPickUp([]);
-          setRouteToDrop([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch routes:", error);
+      if (pickUpRoute) {
+        setRouteToPickUp(
+          pickUpRoute.geometry.coordinates.map(
+            ([lon, lat]: [number, number]) => [lat, lon]
+          )
+        );
       }
-    };
+
+      if (dropRoute) {
+        setRouteToDrop(
+          dropRoute.geometry.coordinates.map(
+            ([lon, lat]: [number, number]) => [lat, lon]
+          )
+        );
+      }
+
+      onstats?.({
+        distanceToPickUp: (pickUpRoute?.distance ?? 0) / 1000,
+        etaToPickUp: (pickUpRoute?.duration ?? 0) / 60,
+        distanceToDrop: (dropRoute?.distance ?? 0) / 1000,
+        etaToDrop: (dropRoute?.duration ?? 0) / 60,
+      });
+    } else if (mapStatus === "ongoing") {
+      setRouteToPickUp([]);
+
+      const dropRoute = await getRoute({
+        startLat: drLat,
+        startLon: drLon,
+        endLat: dLat,
+        endLon: dLon,
+      });
+
+      if (dropRoute) {
+        setRouteToDrop(
+          dropRoute.geometry.coordinates.map(
+            ([lon, lat]: [number, number]) => [lat, lon]
+          )
+        );
+      }
+
+      onstats?.({
+        distanceToPickUp: 0,
+        etaToPickUp: 0,
+        distanceToDrop: (dropRoute?.distance ?? 0) / 1000,
+        etaToDrop: (dropRoute?.duration ?? 0) / 60,
+      });
+    } else {
+      setRouteToPickUp([]);
+      setRouteToDrop([]);
+
+      onstats?.({
+        distanceToPickUp: 0,
+        etaToPickUp: 0,
+        distanceToDrop: 0,
+        etaToDrop: 0,
+      });
+    }
+  } catch (error) {
+    console.error("Failed to fetch routes:", error);
+  }
+};
 
     fetchRoutes();
   }, [driverLocation, pickUpLocation, dropLocation, mapStatus]);
