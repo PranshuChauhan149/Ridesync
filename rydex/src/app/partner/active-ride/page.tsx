@@ -191,7 +191,7 @@ const page = () => {
   const displayDistance =
     status === "confirmed" ? distanceToPickUp : distanceToDrop;
     const paymentStatus = PAYMENT_BADGE[booking?.paymentStatus!??"pending"]
-   const panelProps = {isActive,displayEta,displayDistance,cfg ,status,booking,paymentStatus,canChat,chatOpen,onChatToggle};
+   const panelProps = {isActive,displayEta,displayDistance,cfg ,status,booking,paymentStatus,canChat,chatOpen,onChatToggle,currentRole: "driver"};
   return (
     <div className="h-screen w-full bg-zinc-100 flex flex-row lg:flex-col overflow-hidden">
       <div className="relative flex-1 h-full z-0">

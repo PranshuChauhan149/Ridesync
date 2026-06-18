@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Clock, IndianRupee, MapPinned, MessageCircle, Phone, User } from "lucide-react";
 import RideChat from "./RideChat";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 function PanelContent({
   isActive,
@@ -10,10 +12,12 @@ function PanelContent({
   cfg,
   status,
   booking,
-  paymentStatus,canChat,chatOpen,onChatToggle
+  paymentStatus,canChat,chatOpen,onChatToggle,currentRole
 }: any) {
   if (!isActive) return null;
 
+
+ 
   return (
     <div className="space-y-4">
       {/* Stats Cards */}
@@ -193,7 +197,7 @@ function PanelContent({
 )}
 
 
-   <AnimatePresence>
+<AnimatePresence>
   {chatOpen && canChat && (
     <motion.div
       key="chat"
@@ -203,12 +207,13 @@ function PanelContent({
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       className="mx-5 lg:mx-6 overflow-hidden"
     >
-      <div className="rounded-2xl overflow-hidden border border-zinc-100 h-[460px]">
-        <RideChat
-          bookingId={booking?._id}
-          currentUserId={user?._id}
-          otherUserId={booking?.user?._id}
-        />
+      <div className="rounded-2xl overflow-hidden border border-zinc-100 h-[70vh]">
+       <RideChat
+  currentRole={currentRole}
+  bookingId={booking?._id}
+  userName={booking?.user?.name || "Customer"}
+  driverName={booking?.driver?.name || "Driver"}
+/>
       </div>
     </motion.div>
   )}
