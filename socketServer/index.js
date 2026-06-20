@@ -39,13 +39,12 @@ app.post("/emit", async (req, res) => {
   const { event, userId, data } = req.body;
   try {
     const user = await User.findById(userId);
-    if(user.socketId){
-
+    if (user.socketId) {
       io.to(user.socketId).emit(event, data);
     }
-    return res.json({success:true})
+    return res.json({ success: true });
   } catch (error) {
-    return res.json({success:false})
+    return res.json({ success: false });
   }
 });
 
@@ -70,11 +69,20 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("join-ride", (bookingId) => {
+    console.log("join-ride", bookingId);
+    socket.join(`ride-${bookingId}`);
+  });
 
-  socket.on("join-ride",(bookingId)=>{
-    console.log("join-ride" , bookingId);
-    
-  })
+  socket.on(
+    "driver-location-update",
+    ({ bookingId, latitude, longitude, status }) => {
+      io.to(`ride-${bookingId}`).emit("driver-location", {
+        latitude,
+        longitude,
+      });
+    },
+  );
 
   socket.on("disconnect", async () => {
     await User.findOneAndUpdate(

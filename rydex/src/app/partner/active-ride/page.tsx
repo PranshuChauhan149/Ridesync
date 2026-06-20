@@ -176,9 +176,13 @@ useEffect(() => {
   const socket = getSocket();
 
   socket.emit("join-ride", booking._id);
+   socket.on("driver-location",({latitude,longitude})=>{
+    setDriverPos([latitude,longitude]);
+  })
 
   return () => {
-    socket.emit("leave-ride", booking._id);
+    socket.off("joi-ride");
+    socket.off("driver-location")
   };
 }, [booking?._id]);
 

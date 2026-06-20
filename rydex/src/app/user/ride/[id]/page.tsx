@@ -165,8 +165,13 @@ console.log(id);
   useEffect(() => {
     const socket = getSocket();
   socket.emit("join-ride",id)
+  socket.on("driver-location",({latitude,longitude})=>{
+    setDriverPos([latitude,longitude]);
+  })
     
-     return ()=>{socket.off("join-ride")};
+     return ()=>{socket.off("join-ride")
+        socket.off("driver-location")
+     };
   }, []);
 
   if (loading) {
