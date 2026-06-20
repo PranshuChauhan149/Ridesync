@@ -286,6 +286,14 @@ const Page = () => {
                         Details
                         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </button>
+                      <button
+                        type="button"
+                        onClick={()=>router.push(`/user/ride/${booking._id}`)}
+                        className="flex items-center gap-2 rounded-md border border-blue-100  px-4 py-2 text-sm font-semibold text-black shadow-sm hover:bg-blue-100" style={{"background":"lightgreen"}}
+                      >
+                        View Ride
+                       
+                      </button>
                     </div>
                   </div>
 

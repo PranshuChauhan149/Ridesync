@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
 import PanelContent from "@/components/PanelContent";
+import { useParams } from "next/navigation";
 
 const MAP_STATUS: Record<BookingStatus, "arriving" | "ongoing" | "completed"> =
   {
@@ -112,9 +113,9 @@ const PAYMENT_BADGE: Record<
 const page = () => {
   const [booking, setBooking] = useState<IBooking | null>(null);
   const [loading, setLoading] = useState(false);
-  const [driverPos, setDriverPos] = useState<[Number, Number] | null>(null);
-  const [pickUpPos, setPickUpPos] = useState<[Number, Number] | null>(null);
-  const [dropPos, setDropPos] = useState<[Number, Number] | null>(null);
+  const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
+  const [pickUpPos, setPickUpPos] = useState<[number, number] | null>(null);
+  const [dropPos, setDropPos] = useState<[number, number] | null>(null);
   const [distanceToPickUp, setDistanceToPickUp] = useState(0);
   const [distanceToDrop, setDistanceToDrop] = useState(0);
   const [etaToPickUp, setEtaToPickUp] = useState(0);
@@ -122,30 +123,44 @@ const page = () => {
   const [status, setStatus] = useState("");
   const [chatOpen,setChatOpen] = useState(false)
   const [expanded,setExpanded] = useState(false)
-  useEffect(() => {
-    async function fetch() {
-      setLoading(true);
-      try {
-        const { data } = await axios.get("/api/partner/my-active");
-        setBooking(data);
-        setLoading(false);
-        setStatus(data.bookingStatus);
-        setPickUpPos([
-          data.pickUpLocation.coordinates[1],
-          data.pickUpLocation.coordinates[0],
-        ]);
-        setDropPos([
-          data.dropLocation.coordinates[1],
-          data.dropLocation.coordinates[0],
-        ]);
-      } catch (error) {
-        console.log(error);
-        setLoading(false);
-      }
-    }
-    fetch();
-  }, []);
+  const params = useParams();
+const id = params.id as string;
+console.log(id);
 
+ useEffect(() => {
+  async function fetchRide() {
+    setLoading(true);
+
+    try {
+      const { data } = await axios.post("/api/user/active-ride", {
+        bookingId: id,
+      });
+
+      console.log(data);
+
+      setBooking(data);
+      setStatus(data.bookingStatus);
+
+      setPickUpPos([
+        data.pickUpLocation.coordinates[1],
+        data.pickUpLocation.coordinates[0],
+      ]);
+
+      setDropPos([
+        data.dropLocation.coordinates[1],
+        data.dropLocation.coordinates[0],
+      ]);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (id) {
+    fetchRide();
+  }
+}, [id]);
   useEffect(() => {
     if (!navigator.geolocation) return;
     const watchId = navigator.geolocation.watchPosition(
@@ -249,7 +264,7 @@ const page = () => {
 >
   <div className="bg-black px-6 py-5 flex-shrink-0">
     <p className="text-zinc-500 text-[10px] tracking-[0.2em] uppercase font-semibold mb-3">
-      Driver Panel
+      User Panel
     </p>
 
     <div className="flex items-center justify-between">
