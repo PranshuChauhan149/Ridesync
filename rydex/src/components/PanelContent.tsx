@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Clock, IndianRupee, MapPinned, MessageCircle, Phone, User } from "lucide-react";
+import { Bike, Car, Clock, IndianRupee, MapPinned, MessageCircle, Phone, Truck, User } from "lucide-react";
 import RideChat from "./RideChat";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -16,6 +16,25 @@ function PanelContent({
 }: any) {
   if (!isActive) return null;
 
+
+
+  const getVehicleIcon = (vehicleType?: string) => {
+  switch (vehicleType?.toLowerCase()) {
+    case "bike":
+      return <Bike size={18} className=" text-white" />;
+
+    case "auto":
+      return <Car size={18} className="w-4 h-4 text-white" />;
+
+    case "truck":
+      return <Truck size={18} className="w-4 h-4 text-white" />;
+
+    case "loading":
+    case "car":
+    default:
+      return <Car size={18} className="w-4 h-4 text-white" />;
+  }
+};
 
  
   return (
@@ -218,6 +237,84 @@ function PanelContent({
     </motion.div>
   )}
 </AnimatePresence>
+
+{
+  booking?.vehicle && (
+    <div className="mx-5 lg:mx-6">
+      <div className="bg-zinc-50 border border-zinc-100 rounded-2xl p-4 flex items-center gap-3">
+      <div className="w-11 h-11 rounded-xl bg-zinc-900 flex items-center justify-center">
+      {getVehicleIcon(booking.vehicle.type)}
+      </div>
+      <div className="flex-1 min-w-0">
+         <p className="text-xs text-gray-900 font-medium">
+    Your Vehicle
+  </p>
+
+  <p className="text-sm font-semibold text-black">
+    {booking.vehicle?.vehicleModel ?? "Vehicle"}
+  </p>
+      </div>
+     <div className="flex-shrink-0 bg-zinc-900 border border-zinc-700 px-3 py-1.5 rounded-lg shadow-sm">
+  <p className="text-white text-xs font-bold tracking-widest font-mono uppercase">
+    {booking.vehicle?.number ?? "NUMBER"}
+  </p>
+</div>
+      </div>
+
+
+    </div>
+  )
+}
+
+<div className="mx-3 lg:mx-3">
+  <div className="bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden">
+    <div className="flex gap-3 p-4 border-b border-zinc-100">
+      <div className="flex flex-col items-center flex-shrink-0 pt-1">
+        <div className="w-3 h-3 rounded-full bg-zinc-900 border-2 border-white shadow-sm" />
+        <div
+          className="w-px bg-zinc-200 mt-1"
+          style={{ height: 20 }}
+        />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">
+          Pick Up
+        </p>
+
+        <p className="text-sm text-zinc-900 font-medium leading-sung break-words">
+          {booking.pickUpAddress}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div className="mx-3 lg:mx-3">
+  <div className="bg-zinc-50 border border-zinc-100 rounded-2xl overflow-hidden">
+    <div className="flex gap-3 p-4 border-b border-zinc-100">
+      <div className="flex flex-col items-center flex-shrink-0 pt-1">
+        <div className="w-3 h-3 rounded-full bg-zinc-900 border-2 border-white shadow-sm" />
+        <div
+          className="w-px bg-zinc-200 mt-1"
+          style={{ height: 20 }}
+        />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">
+          Drop 
+        </p>
+
+        <p className="text-sm text-zinc-900 font-medium leading-sung break-words">
+          {booking.dropAddress}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 
     </div>
   );

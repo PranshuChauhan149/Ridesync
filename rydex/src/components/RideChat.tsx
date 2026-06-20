@@ -386,6 +386,11 @@ const RideChat = ({
     </button>
   </div>
 </div>
+
+
+
+    
+
     </div>
   );
 };
