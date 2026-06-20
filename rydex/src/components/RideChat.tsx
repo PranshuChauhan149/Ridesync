@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { Sparkles, Send } from "lucide-react";
+import { getSocket } from "@/lib/socket";
 
 type Message = {
   _id?: string;
@@ -32,46 +33,49 @@ const RideChat = ({
   const { userData } = useSelector(
     (state: RootState) => state.user
   );
-
+const socket = getSocket();
  const sendMessage = async () => {
-  console.log({
-    bookingId,
-    sender: currentRole,
-    text,
-  });
-
   if (!text.trim()) return;
 
   try {
-    await axios.post("/api/chat/send", {
+    const { data } = await axios.post("/api/chat/send", {
       bookingId,
       sender: currentRole,
       text,
     });
 
-    // setMessages([...messages,data]);
+    socket.emit("chat-message", data.msg);
+
+    setText("");
   } catch (error: any) {
     console.log(error?.response?.data);
   }
 };
+const getAllMsgs = async () => {
+  try {
+    const { data } = await axios.post("/api/chat/get-all", {
+      bookingId,
+    });
 
-  const getAllMsgs = async () => {
-    try {
-      const { data } = await axios.post("/api/chat/get-all", {
-        bookingId,
-      });
+    setMessages(data.messages || []);
 
-      setMessages(data.messages || []);
-
-      if (data.messages?.length) {
-        setLastMessage(
-          data.messages[data.messages.length - 1]?.text || ""
-        );
-      }
-    } catch (error) {
-      console.log(error);
+    if (data.messages?.length) {
+      setLastMessage(
+        data.messages[data.messages.length - 1]?.text || ""
+      );
     }
-  };
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+  useEffect(()=>{
+    const socket = getSocket();
+    socket.on("chat-message",(data)=>{
+      setMessages(prev=>[...prev,data]);
+    })
+    return ()=>{socket.off("chat-message")};
+  },[]);
 
   const [lastMessage, setLastMessage] = useState("");
 
@@ -98,9 +102,11 @@ const RideChat = ({
     }
   };
 
-  useEffect(() => {
-    getAllMsgs();
-  }, []);
+ useEffect(() => {
+  if (!bookingId) return;
+
+  getAllMsgs();
+}, [bookingId]);
 
   return (
     <div className="flex flex-col h-full min-h-0 bg-white rounded-2xl overflow-hidden border border-zinc-100">

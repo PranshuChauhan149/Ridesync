@@ -23,11 +23,13 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(
-      {
-        msg,
-      },
-      { status: 201 },
-    );
+  {
+    success: true,
+    message: "Message sent",
+    msg,
+  },
+  { status: 201 }
+);
   } catch (error: any) {
     console.error("Chat Message Error:", error);
 

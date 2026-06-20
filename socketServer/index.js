@@ -84,6 +84,10 @@ io.on("connection", (socket) => {
     },
   );
 
+  socket.on("chat-message",(data)=>{
+    io.to(`ride-${data.bookingId}`).emit("chat-message",data)
+  })
+
   socket.on("disconnect", async () => {
     await User.findOneAndUpdate(
       { socketId: socket.id },
