@@ -70,6 +70,12 @@ io.on("connection", (socket) => {
     });
   });
 
+
+  socket.on("join-ride",(bookingId)=>{
+    console.log("join-ride" , bookingId);
+    
+  })
+
   socket.on("disconnect", async () => {
     await User.findOneAndUpdate(
       { socketId: socket.id },

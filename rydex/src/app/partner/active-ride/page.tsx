@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
 import PanelContent from "@/components/PanelContent";
+import { getSocket } from "@/lib/socket";
 
 const MAP_STATUS: Record<BookingStatus, "arriving" | "ongoing" | "completed"> =
   {
@@ -112,9 +113,9 @@ const PAYMENT_BADGE: Record<
 const page = () => {
   const [booking, setBooking] = useState<IBooking | null>(null);
   const [loading, setLoading] = useState(false);
-  const [driverPos, setDriverPos] = useState<[Number, Number] | null>(null);
-  const [pickUpPos, setPickUpPos] = useState<[Number, Number] | null>(null);
-  const [dropPos, setDropPos] = useState<[Number, Number] | null>(null);
+  const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
+  const [pickUpPos, setPickUpPos] = useState<[number, number] | null>(null);
+  const [dropPos, setDropPos] = useState<[number, number] | null>(null);
   const [distanceToPickUp, setDistanceToPickUp] = useState(0);
   const [distanceToDrop, setDistanceToDrop] = useState(0);
   const [etaToPickUp, setEtaToPickUp] = useState(0);
@@ -145,28 +146,41 @@ const page = () => {
     }
     fetch();
   }, []);
+useEffect(() => {
+  if (!navigator.geolocation || !booking?._id) return;
 
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        setDriverPos([lat, lon]);
-      },
-      (error) => {
-        console.log("gps error", error);
-      },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 2000,
-        timeout: 100000,
-      },
-    );
-    return () => {
-      navigator.geolocation.clearWatch(watchId);
-    };
-  }, []);
+  const socket = getSocket();
+
+  const watchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      setDriverPos([lat, lon]);
+
+      socket.emit("driver-location-update", {
+        bookingId: booking._id,
+        latitude: lat,
+        longitude: lon,
+        status,
+      });
+    }
+  );
+
+  return () => navigator.geolocation.clearWatch(watchId);
+}, [booking?._id, status]);
+
+ useEffect(() => {
+  if (!booking?._id) return;
+
+  const socket = getSocket();
+
+  socket.emit("join-ride", booking._id);
+
+  return () => {
+    socket.emit("leave-ride", booking._id);
+  };
+}, [booking?._id]);
 
   if (loading) {
     return (

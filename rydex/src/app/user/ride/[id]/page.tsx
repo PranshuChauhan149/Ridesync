@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
 import PanelContent from "@/components/PanelContent";
 import { useParams } from "next/navigation";
+import { getSocket } from "@/lib/socket";
 
 const MAP_STATUS: Record<BookingStatus, "arriving" | "ongoing" | "completed"> =
   {
@@ -162,25 +163,10 @@ console.log(id);
   }
 }, [id]);
   useEffect(() => {
-    if (!navigator.geolocation) return;
-    const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        setDriverPos([lat, lon]);
-      },
-      (error) => {
-        console.log("gps error", error);
-      },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 2000,
-        timeout: 100000,
-      },
-    );
-    return () => {
-      navigator.geolocation.clearWatch(watchId);
-    };
+    const socket = getSocket();
+  socket.emit("join-ride",id)
+    
+     return ()=>{socket.off("join-ride")};
   }, []);
 
   if (loading) {
