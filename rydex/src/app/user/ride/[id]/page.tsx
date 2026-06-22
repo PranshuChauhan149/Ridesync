@@ -10,6 +10,7 @@ import { Zap } from "lucide-react";
 import PanelContent from "@/components/PanelContent";
 import { useParams } from "next/navigation";
 import { getSocket } from "@/lib/socket";
+import CompletedScreen from "@/components/CompletedScreen";
 
 const MAP_STATUS: Record<BookingStatus, "arriving" | "ongoing" | "completed"> =
   {
@@ -185,6 +186,13 @@ console.log(id);
         </div>
       </div>
     );
+  }
+
+
+   {status == "completed" && booking}{
+    return (
+      <CompletedScreen booking={booking} />
+    )
   }
 
   const onChatToggle = ()=>{

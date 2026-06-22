@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (booking.dropOtp !== otp) {
+    if (String(booking.dropOtp) !== String(otp)) {
       return NextResponse.json(
         { success: false, message: "Invalid OTP" },
         { status: 400 }
@@ -41,12 +41,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // OTP verified
     booking.dropOtp = undefined;
     booking.dropOtpExpires = undefined;
 
     // Ride completed
-    booking.status = "completed";
+    booking.bookingStatus = "completed";
 
     await booking.save();
 
@@ -54,6 +53,7 @@ export async function POST(req: NextRequest) {
       {
         success: true,
         message: "Drop OTP verified successfully. Ride completed.",
+        bookingStatus: booking.bookingStatus,
       },
       { status: 200 }
     );
