@@ -7,6 +7,7 @@ import Kpi from "./Kpi";
 import TabButton from "./TabButton";
 import { motion,AnimatePresence } from "motion/react";
 import ContentList from "./ContentList";
+import AdminEarning from "./AdminEarning";
 
 
 type Stats ={
@@ -164,6 +165,10 @@ const AdminDashboard = () => {
             {activeTab == "vehicle" && <ContentList data={vehicleReviews ?? []} type={"vehicle"} />}
           </motion.div>
         </AnimatePresence>
+
+
+
+        <AdminEarning/>
       </main>
     </div>
   );

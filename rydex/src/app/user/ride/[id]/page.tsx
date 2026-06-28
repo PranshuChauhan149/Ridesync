@@ -189,11 +189,12 @@ console.log(id);
   }
 
 
-   {status == "completed" && booking}{
-    return (
+  if(status == "completed" && booking){
+  return (
       <CompletedScreen booking={booking} />
     )
-  }
+}
+
 
   const onChatToggle = ()=>{
     setChatOpen(prev=>!prev);

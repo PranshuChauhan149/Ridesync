@@ -45,6 +45,15 @@ export async function POST(req: NextRequest) {
     booking.dropOtpExpires = undefined;
 
     // Ride completed
+    if(booking.paymentStatus == "cash"){
+      const adminCommission = booking.fare * 0.1;
+		const partnerAmount = booking.fare - adminCommission;
+
+
+		booking.paymentStatus = "paid";
+		booking.adminCommission = adminCommission;
+		booking.partnerAmount = partnerAmount;
+    }
     booking.bookingStatus = "completed";
 
     await booking.save();
