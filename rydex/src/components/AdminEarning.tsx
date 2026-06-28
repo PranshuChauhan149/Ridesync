@@ -11,7 +11,7 @@ import {
 
 type Earning = {
   date: string;
-  earnings: number;
+  earning: number;
 };
 
 function AdminEarning() {
@@ -20,9 +20,25 @@ function AdminEarning() {
   useEffect(() => {
     const fetchEarning = async () => {
       try {
-        const { data } = await axios.get("/api/admin/earning");
+        const response = await axios.get("/api/admin/earning");
+        const chartData = (response.data?.data ?? []) as {
+          date: string;
+          earning: number;
+        }[];
 
-        const last7DaysData: Earning[] = data.slice(-7);
+        const normalizedData: Earning[] = chartData.map((item) => ({
+          date: item.date,
+          earning: Number(item.earning) || 0,
+        }));
+
+        const sortedData = normalizedData
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
+
+        const last7DaysData = sortedData.slice(-7);
 
         setEarningData(last7DaysData);
       } catch (error) {
@@ -34,7 +50,7 @@ function AdminEarning() {
   }, []);
 
   const total = earningData.reduce(
-    (sum, item) => sum + item.earnings,
+    (sum, item) => sum + item.earning,
     0
   );
 
@@ -43,11 +59,11 @@ function AdminEarning() {
     : 0;
 
   const max = earningData.length
-    ? Math.max(...earningData.map((d) => d.earnings))
+    ? Math.max(...earningData.map((d) => d.earning))
     : 0;
 
   const bestDay = earningData.find(
-    (d) => d.earnings === max
+    (d) => d.earning === max
   );
 
   const today = earningData[earningData.length - 1];
@@ -56,15 +72,15 @@ function AdminEarning() {
 
   const delta =
     today && yesterday
-      ? today.earnings - yesterday.earnings
+      ? today.earning - yesterday.earning
       : 0;
 
   const deltaPositive = delta >= 0;
 
   const deltaPct =
-    yesterday && yesterday.earnings
+    yesterday && yesterday.earning
       ? Math.abs(
-          Math.round((delta / yesterday.earnings) * 100)
+          Math.round((delta / yesterday.earning) * 100)
         )
       : 0;
 
@@ -91,7 +107,7 @@ function AdminEarning() {
     },
     {
       label: "Today",
-      value: today ? fmt(today.earnings) : "--",
+      value: today ? fmt(today.earning) : "--",
       sub:
         today && yesterday
           ? `${deltaPositive ? "+" : "-"}${fmt(
@@ -196,7 +212,7 @@ function AdminEarning() {
               </div>
 
               <p className="font-bold text-green-600 text-lg">
-                {fmt(item.earnings)}
+                {fmt(item.earning)}
               </p>
             </div>
           ))

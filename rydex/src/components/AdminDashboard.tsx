@@ -1,8 +1,9 @@
 "use client";
 import axios from "axios";
-import { CheckCircle2, Clock3, ShieldX, Truck, User, Users, Video } from "lucide-react";
+import { CheckCircle2, Clock3, ShieldX, Truck, User, Users, Video, LogOut } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
+import { signOut } from "next-auth/react";
 import Kpi from "./Kpi";
 import TabButton from "./TabButton";
 import { motion,AnimatePresence } from "motion/react";
@@ -62,6 +63,10 @@ const AdminDashboard = () => {
 
 
 
+  const handleAdminLogout = async () => {
+    await signOut({ redirect: false });
+  };
+
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-100 via-gray-100 to-zinc-200 text-gray-900">
       <div className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur-lg">
@@ -76,9 +81,19 @@ const AdminDashboard = () => {
             />
           </div>
 
-          <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm">
-            <Users size={16} />
-            <span>Admin Dashboard</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm">
+              <Users size={16} />
+              <span>Admin Dashboard</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleAdminLogout}
+              className="inline-flex items-center gap-2 rounded-full border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+            >
+              <LogOut size={16} />
+              Logout
+            </button>
           </div>
         </div>
 
