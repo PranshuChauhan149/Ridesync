@@ -215,13 +215,12 @@ console.log(id);
           driverLocation={driverPos}
           pickUpLocation={pickUpPos}
           dropLocation={dropPos}
-          mapStatus={MAP_STATUS[booking?.bookingStatus]}
+          mapStatus={MAP_STATUS[(booking?.bookingStatus ?? "confirmed") as BookingStatus]}
           onStats={({
             distanceToPickUp,
             etaToPickUp,
             distanceToDrop,
             etaToDrop,
-
           }) => {
             setDistanceToPickUp(distanceToPickUp);
             setEtaToPickUp(etaToPickUp);

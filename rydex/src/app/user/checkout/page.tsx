@@ -750,7 +750,7 @@ function page() {
                   </button>
 
                   <button
-                    onClick={() => router.push("/bookings")}
+                    onClick={() => router.push(`/user/ride/${(booking as any)?._id}`)}
                     className="flex-1 py-3 bg-black rounded-2xl border border-zinc-900 font-bold"
                   >
                     View Booking

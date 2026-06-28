@@ -11,7 +11,7 @@ type Props = {
   pickUpLocation: [number, number] | null;
   dropLocation: [number, number] | null;
   mapStatus: string;
-  onstats?: (data: {
+  onStats?: (data: {
     distanceToPickUp: number;
     etaToPickUp: number;
     distanceToDrop: number;
@@ -74,7 +74,8 @@ const LiveRideMap = ({
   driverLocation,
   pickUpLocation,
   dropLocation,
-  mapStatus,onstats
+  mapStatus,
+  onStats,
 }: Props) => {
   const center = driverLocation ||
     pickUpLocation ||
@@ -86,11 +87,12 @@ const LiveRideMap = ({
   const showPickUpRoute = mapStatus === "arriving" && routeToPickUp.length > 0;
   const showDropRoute = mapStatus !== "completed" && routeTodrop.length > 0;
   useEffect(() => {
-    if (!driverLocation || !pickUpLocation || !dropLocation) return;
+    if (!pickUpLocation || !dropLocation) return;
+    if (mapStatus === "arriving" && !driverLocation) return;
 
     const [pLat, pLon] = pickUpLocation;
     const [dLat, dLon] = dropLocation;
-    const [drLat, drLon] = driverLocation;
+    const [drLat, drLon] = driverLocation ?? [0, 0];
 
     const getRoute = async ({
       startLat,
@@ -143,7 +145,7 @@ const LiveRideMap = ({
         );
       }
 
-      onstats?.({
+      onStats?.({
         distanceToPickUp: (pickUpRoute?.distance ?? 0) / 1000,
         etaToPickUp: (pickUpRoute?.duration ?? 0) / 60,
         distanceToDrop: (dropRoute?.distance ?? 0) / 1000,
@@ -167,7 +169,7 @@ const LiveRideMap = ({
         );
       }
 
-      onstats?.({
+      onStats?.({
         distanceToPickUp: 0,
         etaToPickUp: 0,
         distanceToDrop: (dropRoute?.distance ?? 0) / 1000,
@@ -177,7 +179,7 @@ const LiveRideMap = ({
       setRouteToPickUp([]);
       setRouteToDrop([]);
 
-      onstats?.({
+      onStats?.({
         distanceToPickUp: 0,
         etaToPickUp: 0,
         distanceToDrop: 0,
@@ -207,7 +209,7 @@ const LiveRideMap = ({
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
 
-        {showPickMarker && (
+        {showPickMarker && pickUpLocation && (
           <Marker position={pickUpLocation} icon={pickUpIcon} />
         )}
 
