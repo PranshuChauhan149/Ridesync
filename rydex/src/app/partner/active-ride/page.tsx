@@ -1,6 +1,6 @@
 "use client";
 
-import LiveRideMap from "@/components/LiveRideMap";
+import dynamic from "next/dynamic";
 import {
   BookingStatus,
   IBooking,
@@ -13,8 +13,18 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, KeyRound, MapPin, Navigation, Zap } from "lucide-react";
 import PanelContent from "@/components/PanelContent";
 import { getSocket } from "@/lib/socket";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import CompletedScreen from "@/components/CompletedScreen";
+
+const LiveRideMap = dynamic(() => import("@/components/LiveRideMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full bg-zinc-100 flex items-center justify-center text-sm text-zinc-500">
+      Loading map...
+    </div>
+  ),
+});
 
 const MAP_STATUS: Record<BookingStatus, "arriving" | "ongoing" | "completed"> =
   {
@@ -113,7 +123,8 @@ const PAYMENT_BADGE: Record<PaymentStatus, { label: string; cls: string }> = {
   },
 };
 
-const page = () => {
+const Page = () => {
+  const router = useRouter();
   const [booking, setBooking] = useState<IBooking | null>(null);
   const [loading, setLoading] = useState(false);
   const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
@@ -193,7 +204,7 @@ const page = () => {
     });
 
     return () => {
-      socket.off("joi-ride");
+      socket.off("join-ride");
       socket.off("driver-location");
     };
   }, [booking?._id]);
@@ -211,10 +222,11 @@ const page = () => {
 
     setOtpMode(true); // OTP box open karo
     setOtpVerified(false);
-  } catch (error: any) {
-    toast.error(
-      error?.response?.data?.message || "Failed to send pickup OTP"
-    );
+  } catch (error: unknown) {
+    const message =
+      (error as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message || "Failed to send pickup OTP";
+    toast.error(message);
   } finally {
     setLoadingOtp(false);
   }
@@ -243,9 +255,10 @@ const handleVerifyPickUpOtp = async () => {
     setBooking((prev) =>
       prev ? { ...prev, bookingStatus: "started" } : prev
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     const message =
-      error?.response?.data?.message || "Invalid or expired OTP";
+      (error as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message || "Invalid or expired OTP";
 
     setOtpError(message);
     toast.error(message);
@@ -266,10 +279,11 @@ const handleSendDropOtp = async () => {
     toast.success(data.message || "Drop OTP sent successfully");
 
     setDropOtpMode(true);
-  } catch (error: any) {
-    toast.error(
-      error?.response?.data?.message || "Failed to send drop OTP"
-    );
+  } catch (error: unknown) {
+    const message =
+      (error as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message || "Failed to send drop OTP";
+    toast.error(message);
   } finally {
     setLoadingDropOtp(false);
   }
@@ -296,9 +310,10 @@ const handleVerifyDropOtp = async () => {
     setBooking((prev) =>
       prev ? { ...prev, bookingStatus: "completed" } : prev
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     const message =
-      error?.response?.data?.message || "Invalid or expired OTP";
+      (error as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message || "Invalid or expired OTP";
 
     setDropOtpError(message);
     toast.error(message);
@@ -333,13 +348,14 @@ if(status == "completed" && booking){
     setChatOpen((prev) => !prev);
   };
 
-  const cfg = STATUS_LABEL[booking?.bookingStatus! ?? "confirmed"];
+  const currentStatus = (booking?.bookingStatus ?? "confirmed") as BookingStatus;
+  const cfg = STATUS_LABEL[currentStatus];
   const isActive = ["confirmed", "started"].includes(status);
   const canChat = booking?.bookingStatus === "confirmed";
   const displayEta = status === "confirmed" ? etaToPickUp : etaToDrop;
   const displayDistance =
     status === "confirmed" ? distanceToPickUp : distanceToDrop;
-  const paymentStatus = PAYMENT_BADGE[booking?.paymentStatus! ?? "pending"];
+  const paymentStatus = PAYMENT_BADGE[(booking?.paymentStatus ?? "pending") as PaymentStatus];
   const panelProps = {
     isActive,
     displayEta,
@@ -354,7 +370,16 @@ if(status == "completed" && booking){
     currentRole: "driver",
   };
   return (
-    <div className="h-screen w-full bg-zinc-100 flex flex-row lg:flex-col overflow-hidden">
+    <div className="relative h-screen w-full bg-zinc-100 flex flex-row lg:flex-col overflow-hidden">
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="absolute top-4 left-4 z-50 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
+      >
+        <span className="text-base">←</span>
+        Back
+      </button>
+
       <div className="relative flex-1 h-full z-0">
         <LiveRideMap
           driverLocation={driverPos}
@@ -378,7 +403,7 @@ if(status == "completed" && booking){
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
-        className="absolute top-4 left-1/2 -translate-x-1/2 z-[500] pointer-events-none"
+        className="absolute top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
       >
         <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-zinc-100">
           <span
@@ -395,10 +420,10 @@ if(status == "completed" && booking){
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         className="
     hidden lg:flex
-    w-[520px]
-    xl:w-[600px]
+    w-130
+    xl:w-150
     h-full
-    flex-shrink-0
+    shrink-0
     flex-col
     bg-white
     border-l
@@ -406,7 +431,7 @@ if(status == "completed" && booking){
     overflow-hidden
   "
       >
-        <div className="bg-black px-6 py-5 flex-shrink-0">
+        <div className="bg-black px-6 py-5 shrink-0">
           <p className="text-zinc-500 text-[10px] tracking-[0.2em] uppercase font-semibold mb-3">
             Driver Panel
           </p>
@@ -431,7 +456,7 @@ if(status == "completed" && booking){
             <PanelContent {...panelProps} />
           </div>
 
-<div className="flex-shrink-0 border-t border-zinc-100 bg-white px-5 py-4">
+<div className="shrink-0 border-t border-zinc-100 bg-white px-5 py-4">
             <AnimatePresence mode="wait">
               {status === "confirmed" && !otpMode && !otpVerified &&  (
                 <motion.button onClick={()=>{
@@ -443,7 +468,7 @@ if(status == "completed" && booking){
                   exit={{ opacity: 0, y: -6 }}
                   className="w-full bg-zinc-900 hover:bg-zinc-800 active:scale-[0.97] text-white py-4 rounded-2xl font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-2"
                 >
-                  <MapPin /> I 've Arrived at Pickup{" "}
+                  <MapPin /> I&apos;ve Arrived at Pickup{" "}
                   <ArrowRight size={15} className="ml-1" />
                 </motion.button>
               )}
@@ -684,7 +709,7 @@ if(status == "completed" && booking){
             <PanelContent {...panelProps} />
           </div>
 
-          <div className="flex-shrink-0 border-t border-zinc-100 bg-white px-5 py-4">
+          <div className="shrink-0 border-t border-zinc-100 bg-white px-5 py-4">
             <AnimatePresence mode="wait">
               {status === "confirmed" && !otpMode && !otpVerified &&  (
                 <motion.button onClick={()=>{
@@ -696,7 +721,7 @@ if(status == "completed" && booking){
                   exit={{ opacity: 0, y: -6 }}
                   className="w-full bg-zinc-900 hover:bg-zinc-800 active:scale-[0.97] text-white py-4 rounded-2xl font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-2"
                 >
-                  <MapPin /> I 've Arrived at Pickup{" "}
+                  <MapPin /> I&apos;ve Arrived at Pickup{" "}
                   <ArrowRight size={15} className="ml-1" />
                 </motion.button>
               )}
@@ -877,4 +902,4 @@ if(status == "completed" && booking){
   );
 };
 
-export default page;
+export default Page;

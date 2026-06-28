@@ -22,11 +22,14 @@ export async function GET() {
       bookingStatus: { $in: ["confirmed", "started"] },
     }).populate("user vehicle driver");
     return NextResponse.json(booking,{status:200})
-  } catch (error) {
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Internal Server Error";
+
     return NextResponse.json(
       {
         success: false,
-        message: error.message || "Internal Server Error",
+        message,
       },
       { status: 500 },
     );

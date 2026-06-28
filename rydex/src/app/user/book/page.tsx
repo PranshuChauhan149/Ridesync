@@ -55,8 +55,8 @@ const Page = () => {
   const [pickUpLon, setPickUpLon] = useState<number | null>(null);
   const [dropLat, setDropLat] = useState<number | null>(null);
   const [dropLon, setDropLon] = useState<number | null>(null);
-  const [pickUpSuggestion, setPickUpSugesstion] = useState<Place[]>();
-  const [dropSuggestion, setDropSuggestion] = useState<Place[]>();
+  const [pickUpSuggestion, setPickUpSugesstion] = useState<Place[]>([]);
+  const [dropSuggestion, setDropSuggestion] = useState<Place[]>([]);
   const [locating, setLocating] = useState(false);
 
   const stepVariants = {
@@ -109,35 +109,43 @@ const Page = () => {
 
       const source = data?.results || data?.features || [];
 
-      const results: Place[] = source.map((item: any) => {
-        const p = item?.properties || item;
-        const lat = p?.lat ?? item?.geometry?.coordinates?.[1];
-        const lng = p?.lon ?? item?.geometry?.coordinates?.[0];
+      const results: Place[] = source
+        .map((item: Record<string, unknown>) => {
+          const p = (item?.properties as Record<string, unknown> | undefined) || item;
+          const rawLat = (p?.lat as number | undefined) ?? (item?.geometry as { coordinates?: [number, number] } | undefined)?.coordinates?.[1];
+          const rawLng = (p?.lon as number | undefined) ?? (item?.geometry as { coordinates?: [number, number] } | undefined)?.coordinates?.[0];
+          const lat = typeof rawLat === "number" ? rawLat : undefined;
+          const lng = typeof rawLng === "number" ? rawLng : undefined;
 
-        const fullAddress =
-          p?.formatted ||
-          [
-            p?.address_line1,
-            p?.address_line2,
-            p?.city,
-            p?.state,
-            p?.postcode,
-            p?.country,
-          ]
-            .filter(Boolean)
-            .join(", ");
+          const fullAddress =
+            (p?.formatted as string | undefined) ||
+            [
+              p?.address_line1,
+              p?.address_line2,
+              p?.city,
+              p?.state,
+              p?.postcode,
+              p?.country,
+            ]
+              .filter(Boolean)
+              .join(", ");
 
-        return {
-          id: String(p?.place_id || p?.osm_id || Math.random()),
-          name: fullAddress,
-          city: p?.city || "",
-          state: p?.state || "",
-          country: p?.country || "",
-          countrycode: p?.country_code || p?.countrycode || "",
-          lat,
-          lng,
-        };
-      }).filter((place: Place) => typeof place.lat === "number" && typeof place.lng === "number");
+          if (typeof lat !== "number" || typeof lng !== "number") {
+            return null;
+          }
+
+          return {
+            id: String(p?.place_id || p?.osm_id || Math.random()),
+            name: String(fullAddress || ""),
+            city: String(p?.city || ""),
+            state: String(p?.state || ""),
+            country: String(p?.country || ""),
+            countrycode: String(p?.country_code || p?.countrycode || ""),
+            lat,
+            lng,
+          };
+        })
+        .filter((place: Place | null): place is Place => place !== null);
 
       if (countryFilter && countryFilter.trim()) {
         const normalizedCountry = countryFilter.trim().toLowerCase();
@@ -257,13 +265,13 @@ const Page = () => {
         className="w-full max-w-md"
       >
         <div className="flex items-center gap-4 mb-6 px-1">
-          <motion.div
+          <motion.button
             whileTap={{ scale: 0.88 }}
-            onClick={() => router.push("/")}
+            onClick={() => router.back()}
             className="w-11 h-11 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 shadow-md cursor-pointer transition-all duration-300"
           >
             <ArrowLeft className="text-gray-700 text-xl" />
-          </motion.div>
+          </motion.button>
 
           <div className="flex-1 min-w-0">
             <h1 className="text-zinc-900 text-xl font-black tracking-tight">

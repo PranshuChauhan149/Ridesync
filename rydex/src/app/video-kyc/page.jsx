@@ -1,12 +1,20 @@
 "use client";
 
-import React, { useRef } from "react";
-import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
 const Page = () => {
   const userData = useSelector((state) => state.user.userData);
   const containerRef = useRef(null);
+  const [isClient, setIsClient] = useState(false);
+  const [zegoModule, setZegoModule] = useState(null);
+
+  useEffect(() => {
+    setIsClient(true);
+    import("@zegocloud/zego-uikit-prebuilt").then((mod) => {
+      setZegoModule(mod.ZegoUIKitPrebuilt);
+    });
+  }, []);
 
   const startCall = () => {
     if (!containerRef.current) {
@@ -23,7 +31,11 @@ const Page = () => {
         return;
       }
 
-      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+      if (!zegoModule) {
+        return;
+      }
+
+      const kitToken = zegoModule.generateKitTokenForTest(
         appId,
         serverSecret,
         "room-1",
@@ -31,7 +43,7 @@ const Page = () => {
         userData.name || "User",
       );
 
-      const zp = ZegoUIKitPrebuilt.create(kitToken);
+      const zp = zegoModule.create(kitToken);
 
       zp.joinRoom({
         container: containerRef.current,
@@ -44,6 +56,10 @@ const Page = () => {
       console.log(error);
     }
   };
+
+  if (!isClient) {
+    return <div className="h-screen bg-zinc-950" />;
+  }
 
   return (
     <div className="h-screen">

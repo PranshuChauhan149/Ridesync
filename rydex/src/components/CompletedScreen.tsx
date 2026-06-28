@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { IBooking } from "@/models/booking.models";
 
-const CompletedScreen = ({ booking ,role}: { booking: IBooking }) => {
+const CompletedScreen = ({ booking, role }: { booking: IBooking; role?: string }) => {
   return (
     <div className="relative min-h-screen overflow-hidden bg-black flex items-center justify-center px-4 py-10">
 

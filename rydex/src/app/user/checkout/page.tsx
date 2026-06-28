@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { motion } from "motion/react";
 import {
   Bike,
@@ -21,7 +21,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { getSocket } from "@/lib/socket";
 
-const VEHICLE_META: any = {
+const VEHICLE_META: Record<string, { label: string; Icon: React.ComponentType<{ size?: number; className?: string }> }> = {
   bike: { label: "Bike", Icon: Bike },
   auto: { label: "Auto", Icon: Car },
   car: { label: "Car", Icon: Car },
@@ -35,7 +35,6 @@ type status =
   | "awaiting_payment"
   | "rejected"
   | "expired"
-  
   | "confirmed"
   | "payment";
 
@@ -46,7 +45,7 @@ type Booking = {
   bookingStatus: status;
 };
 
-function page() {
+function CheckoutContent() {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -150,7 +149,7 @@ function page() {
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
       // already loaded
-      if ((window as any).Razorpay) {
+      if ((window as Window & { Razorpay?: unknown }).Razorpay) {
         resolve(true);
         return;
       }
@@ -211,14 +210,14 @@ function page() {
           return;
         }
 
-        const razorpayOptions = {
+        const razorpayOptions: Record<string, unknown> = {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: order.amount,
           currency: order.currency,
           name: "Rydex",
           description: `Payment for booking ${booking._id}`,
           order_id: order.id,
-          handler: async (response: any) => {
+          handler: async (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) => {
             const { data: verifyData } = await axios.post(
               "/api/payment/verify",
               {
@@ -233,7 +232,7 @@ function page() {
               toast.success("Payment verified successfully");
               setStatus("confirmed");
               setBooking(verifyData.booking);
-              window.location.href = `/ride/${booking._id}`
+              router.push(`/user/ride/${booking._id}`);
             } else {
               toast.error(verifyData?.message || "Payment verification failed");
             }
@@ -246,7 +245,15 @@ function page() {
           },
         };
 
-        const razorpayInstance = new (window as any).Razorpay(razorpayOptions);
+        const razorpayWindow = window as Window & {
+          Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+        };
+
+        if (!razorpayWindow.Razorpay) {
+          throw new Error("Razorpay is not available");
+        }
+
+        const razorpayInstance = new razorpayWindow.Razorpay(razorpayOptions);
         razorpayInstance.open();
       }
     } catch (error) {
@@ -720,23 +727,23 @@ function page() {
                 <div className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-sm text-zinc-900">
                   <div className="mb-2">
                     <div className="text-[10px] text-zinc-500">Pickup</div>
-                    <div className="font-semibold">{(booking as any)?.pickUpAddress || pickUp}</div>
+                    <div className="font-semibold">{(booking as { pickUpAddress?: string } | null)?.pickUpAddress || pickUp}</div>
                   </div>
 
                   <div className="mb-2">
                     <div className="text-[10px] text-zinc-500">Drop</div>
-                    <div className="font-semibold">{(booking as any)?.dropAddress || drop}</div>
+                    <div className="font-semibold">{(booking as { dropAddress?: string } | null)?.dropAddress || drop}</div>
                   </div>
 
                   <div className="mb-2">
                     <div className="text-[10px] text-zinc-500">Fare</div>
-                    <div className="font-semibold">₹{(booking as any)?.fare || fare}</div>
+                    <div className="font-semibold">₹{(booking as { fare?: string | number } | null)?.fare || fare}</div>
                   </div>
 
-                  {(booking as any)?.driverMobileNumber && (
+                  {(booking as { driverMobileNumber?: string } | null)?.driverMobileNumber && (
                     <div>
                       <div className="text-[10px] text-zinc-500">Driver Contact</div>
-                      <div className="font-semibold">{(booking as any).driverMobileNumber}</div>
+                      <div className="font-semibold">{(booking as { driverMobileNumber?: string } | null)?.driverMobileNumber}</div>
                     </div>
                   )}
                 </div>
@@ -750,7 +757,7 @@ function page() {
                   </button>
 
                   <button
-                    onClick={() => router.push(`/user/ride/${(booking as any)?._id}`)}
+                    onClick={() => router.push(`/user/ride/${booking?._id ?? ""}`)}
                     className="flex-1 py-3 bg-black rounded-2xl border border-zinc-900 font-bold"
                   >
                     View Booking
@@ -765,4 +772,10 @@ function page() {
   );
 }
 
-export default page;
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-zinc-100" />}>
+      <CheckoutContent />
+    </Suspense>
+  );
+}

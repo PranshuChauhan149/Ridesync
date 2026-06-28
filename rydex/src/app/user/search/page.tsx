@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import SearchMap from "../../../components/SearchMap"
+import React, { Suspense, useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { ArrowLeft, Bike, Car, CarFront, MapPin, Phone, RefreshCw, Route, Search, Truck, Zap } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -12,6 +12,11 @@ import VecicleCard from '@/components/VecicleCard'
 
 
 
+
+const SearchMap = dynamic(() => import("../../../components/SearchMap"), {
+  ssr: false,
+  loading: () => <div className="h-full w-full bg-zinc-100" />,
+});
 
 const VEHICLE_META: any = {
   bike: { label: "Bike", Icon: Bike },
@@ -39,7 +44,7 @@ const VEHICLE_META: any = {
 }
 
 
-const page = () => {
+const SearchPageContent = () => {
   const params = useSearchParams()
   const router = useRouter()
 
@@ -387,4 +392,10 @@ const InfoCard = ({ label, value, icon: Icon }: InfoCardProps) => {
   )
 }
 
-export default page
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-zinc-100" />}>
+      <SearchPageContent />
+    </Suspense>
+  )
+}

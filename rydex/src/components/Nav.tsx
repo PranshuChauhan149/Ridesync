@@ -14,7 +14,19 @@ import AuthModal from "./AuthModal";
 import axios from "axios";
 import { getSocket } from "@/lib/socket";
 
-const navItems = ["Home", "Bookings", "About", "Contact"];
+const userNavItems = [
+  { label: "Home", href: "/" },
+  { label: "Bookings", href: "/user/bookings" },
+  { label: "About", href: "/user/about" },
+  { label: "Contact", href: "/user/contact" },
+];
+
+const partnerNavItems = [
+  { label: "Home", href: "/" },
+  { label: "Pending Requests", href: "/partner/pending-requests" },
+  { label: "Bookings", href: "/partner/bookings" },
+  { label: "Active Ride", href: "/partner/active-ride" },
+];
 
 const Nav = () => {
   const [openProfile, setOpenProfile] = useState(false);
@@ -26,6 +38,9 @@ const Nav = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { userData } = useSelector((state: RootState) => state.user);
   const router = useRouter();
+  const currentNavItems =
+    userData?.role === "partner" ? partnerNavItems : userNavItems;
+
   const handleLogOut = async () => {
     await signOut({ redirect: false });
     dispatch(setUserData(null));
@@ -35,26 +50,31 @@ const Nav = () => {
 
   const initial = userData?.name?.charAt(0)?.toUpperCase() ?? "U";
 
-  const fetchCount = async () => {
-  try {
-    const { data } = await axios.post(
-      "/api/partner/bookings/pending-requests-count"
-    );
-console.log(data);
-
-    if (data.success) {
-      setPendingCount(data.count);
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
-
 useEffect(() => {
-  if (userData?.role === "partner") {
-    fetchCount();
-  }
-}, [userData]);
+  if (userData?.role !== "partner") return;
+
+  let cancelled = false;
+
+  const fetchCount = async () => {
+    try {
+      const { data } = await axios.post(
+        "/api/partner/bookings/pending-requests-count"
+      );
+
+      if (!cancelled && data.success) {
+        setPendingCount(data.count);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  void fetchCount();
+
+  return () => {
+    cancelled = true;
+  };
+}, [userData?.role]);
 
 
 
@@ -82,76 +102,27 @@ useEffect(() => {
       >
         <div className="relative flex items-center justify-between px-4 py-3 md:px-8">
           <Link href="/" className="shrink-0" aria-label="Go to homepage">
-            <Image src="/logo.jpeg" alt="logo" width={44} height={44} priority />
+            <Image src="/logo.png" alt="logo" width={44} height={44} priority />
           </Link>
 
          <div className="hidden items-center gap-6 lg:flex">
-  {userData?.role === "partner" ? (
-    <>
-      <Link
-        href="/"
-        className={`text-sm transition ${
-          pathname === "/" ? "text-yellow-400" : "text-white hover:text-yellow-300"
-        }`}
-      >
-        Home
-      </Link>
+  {currentNavItems.map((item) => {
+    const isActive = pathname === item.href;
 
+    return (
       <Link
-        href="/partner/pending-requests"
-        className={`inline-flex items-center gap-1 text-sm transition ${
-          pathname === "/partner/pending-requests"
+        key={item.label}
+        href={item.href}
+        className={`text-sm transition ${
+          isActive
             ? "text-yellow-400"
             : "text-white hover:text-yellow-300"
         }`}
       >
-        <span>Pending Requests</span>
-        <span className="inline-flex min-w-5.5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-bold leading-5 text-white">
-          {pendingCount}
-        </span>
+        {item.label}
       </Link>
-      <Link
-        href="/partner/bookings"
-        className={`text-sm transition ${
-          pathname === "/partner/bookings"
-            ? "text-yellow-400"
-            : "text-white hover:text-yellow-300"
-        }`}
-      >
-        Bookings
-      </Link>
-
-      <Link
-        href="/partner/active-ride"
-        className={`text-sm transition ${
-          pathname === "/partner/active-ride"
-            ? "text-yellow-400"
-            : "text-white hover:text-yellow-300"
-        }`}
-      >
-        Active Ride
-      </Link>
-    </>
-  ) : (
-    navItems.map((item) => {
-      const href = item === "Home" ? "/" : `/user/${item.toLowerCase()}`;
-      const isActive = pathname === href;
-
-      return (
-        <Link
-          key={item}
-          href={href}
-          className={`text-sm transition ${
-            isActive
-              ? "text-yellow-400"
-              : "text-white hover:text-yellow-300"
-          }`}
-        >
-          {item}
-        </Link>
-      );
-    })
-  )}
+    );
+  })}
 </div>
           <div className="flex items-center gap-3">
             {!userData && (
@@ -221,14 +192,13 @@ useEffect(() => {
           {isOpen && (
             <div className="absolute left-0 top-16 flex w-full flex-col gap-5 rounded-b-3xl bg-[#00000B]/95 p-5 shadow-2xl lg:hidden">
               <div className="flex flex-col gap-3">
-                {navItems.map((item) => {
-                  const href = item === "Home" ? "/user" : `/${item.toLowerCase()}`;
-                  const isActive = pathname === href;
+                {currentNavItems.map((item) => {
+                  const isActive = pathname === item.href;
 
                   return (
                     <Link
-                      key={item}
-                      href={href}
+                      key={item.label}
+                      href={item.href}
                       onClick={() => setIsOpen(false)}
                       className={`rounded-xl py-2 text-center text-base font-medium transition-all duration-200 ${
                         isActive
@@ -236,7 +206,7 @@ useEffect(() => {
                           : "text-white hover:bg-white/10"
                       }`}
                     >
-                      {item}
+                      {item.label}
                     </Link>
                   );
                 })}

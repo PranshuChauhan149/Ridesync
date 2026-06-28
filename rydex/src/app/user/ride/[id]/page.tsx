@@ -8,7 +8,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
 import PanelContent from "@/components/PanelContent";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { getSocket } from "@/lib/socket";
 import CompletedScreen from "@/components/CompletedScreen";
 
@@ -112,7 +112,7 @@ const PAYMENT_BADGE: Record<
   },
 };
 
-const page = () => {
+const Page = () => {
   const [booking, setBooking] = useState<IBooking | null>(null);
   const [loading, setLoading] = useState(false);
   const [driverPos, setDriverPos] = useState<[number, number] | null>(null);
@@ -124,10 +124,10 @@ const page = () => {
   const [etaToDrop, setEtaToDrop] = useState(0);
   const [status, setStatus] = useState("");
   const [chatOpen,setChatOpen] = useState(false)
-  const [expanded,setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(false);
   const params = useParams();
-const id = params.id as string;
-console.log(id);
+  const router = useRouter();
+  const id = params.id as string;
 
  useEffect(() => {
   async function fetchRide() {
@@ -164,16 +164,19 @@ console.log(id);
   }
 }, [id]);
   useEffect(() => {
+    if (!id) return;
+
     const socket = getSocket();
-  socket.emit("join-ride",id)
-  socket.on("driver-location",({latitude,longitude})=>{
-    setDriverPos([latitude,longitude]);
-  })
-    
-     return ()=>{socket.off("join-ride")
-        socket.off("driver-location")
-     };
-  }, []);
+    socket.emit("join-ride", id);
+    socket.on("driver-location", ({ latitude, longitude }) => {
+      setDriverPos([latitude, longitude]);
+    });
+
+    return () => {
+      socket.off("join-ride");
+      socket.off("driver-location");
+    };
+  }, [id]);
 
   if (loading) {
     return (
@@ -200,16 +203,26 @@ console.log(id);
     setChatOpen(prev=>!prev);
   }
 
-  const cfg = STATUS_LABEL[booking?.bookingStatus! ?? "confirmed"];
+  const currentStatus = (booking?.bookingStatus ?? "confirmed") as BookingStatus;
+  const cfg = STATUS_LABEL[currentStatus];
   const isActive = ["confirmed", "started"].includes(status);
-  const canChat = booking?.bookingStatus === "confirmed"
+  const canChat = booking?.bookingStatus === "confirmed";
   const displayEta = status === "confirmed" ? etaToPickUp : etaToDrop;
   const displayDistance =
     status === "confirmed" ? distanceToPickUp : distanceToDrop;
-    const paymentStatus = PAYMENT_BADGE[booking?.paymentStatus!??"pending"]
+  const paymentStatus = PAYMENT_BADGE[(booking?.paymentStatus ?? "pending") as PaymentStatus];
    const panelProps = {isActive,displayEta,displayDistance,cfg ,status,booking,paymentStatus,canChat,chatOpen,onChatToggle,currentRole: "user"};
   return (
-    <div className="h-screen w-full bg-zinc-100 flex flex-row lg:flex-col overflow-hidden">
+    <div className="relative h-screen w-full bg-zinc-100 flex flex-row lg:flex-col overflow-hidden">
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="absolute top-4 left-4 z-50 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50"
+      >
+        <span className="text-base">←</span>
+        Back
+      </button>
+
       <div className="relative flex-1 h-full z-0">
         <LiveRideMap
           driverLocation={driverPos}
@@ -233,7 +246,7 @@ console.log(id);
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
-        className="absolute top-4 left-1/2 -translate-x-1/2 z-[500] pointer-events-none"
+        className="absolute top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
       >
         <div className="flex items-center gap-2 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-zinc-100">
           <span
@@ -250,10 +263,10 @@ console.log(id);
   transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
   className="
     hidden lg:flex
-    w-[520px]
-    xl:w-[600px]
+    w-130
+    xl:w-150
     h-full
-    flex-shrink-0
+    shrink-0
     flex-col
     bg-white
     border-l
@@ -364,4 +377,4 @@ className="lg:hidden"
   );
 };
 
-export default page;
+export default Page;
